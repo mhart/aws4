@@ -29,6 +29,9 @@ aws4.sign(opts) // assumes AWS credentials are available in process.env
 // eg, pipe the SOAP response from the above SQS request to stdout
 http.request(opts, function(res) { res.pipe(process.stdout) }).end()
 
+// create a utility function to pipe to stdout (with https this time)
+function request(o) { https.request(o, function(res) { res.pipe(process.stdout) }).end(o.body || '') }
+
 // you can pass AWS credentials in explicitly
 aws4.sign(opts, { accessKeyId: '', secretAccessKey: '' })
 
@@ -36,13 +39,11 @@ aws4.sign(opts, { accessKeyId: '', secretAccessKey: '' })
 opts = aws4.sign({ service: 'sqs', region: 'us-east-1', path: '/?Action=ListQueues' })
 
 // aws4 can infer the HTTP method if a body is passed in
-opts = aws4.sign({ service: 'iam', body: 'Action=ListGroups&Version=2010-05-08' })
-
-// opts.method will now be POST and Content-Type: 'application/x-www-form-urlencoded'
-https.request(opts, function(res) { res.pipe(process.stdout) }).end(opts.body)
+// method will be POST and Content-Type: 'application/x-www-form-urlencoded'
+request(aws4.sign({ service: 'iam', body: 'Action=ListGroups&Version=2010-05-08' }))
 
 // can specify any custom option or header as per usual
-opts = aws4.sign({
+request(aws4.sign({
   service: 'dynamodb',
   region: 'ap-southeast-2',
   method: 'POST',
@@ -52,19 +53,15 @@ opts = aws4.sign({
     'X-Amz-Target': 'DynamoDB_20111205.ListTables'
   },
   body: '{}'
-})
-http.request(opts, function(res) { res.pipe(process.stdout) }).end(opts.body)
+}))
 
 // works with all other services that support Signature Version 4
 
-opts = aws4.sign({ service: 'sts', path: '/?Action=GetSessionToken&Version=2011-06-15' })
-https.request(opts, function(res) { res.pipe(process.stdout) }).end()
+request(aws4.sign({ service: 'sts', path: '/?Action=GetSessionToken&Version=2011-06-15' }))
 
-opts = aws4.sign({ service: 'glacier', path: '/-/vaults', headers: { 'X-Amz-Glacier-Version': '2012-06-01' } })
-https.request(opts, function(res) { res.pipe(process.stdout) }).end()
+request(aws4.sign({ service: 'glacier', path: '/-/vaults', headers: { 'X-Amz-Glacier-Version': '2012-06-01' } }))
 
-opts = aws4.sign({ service: 'cloudsearch', path: '/?Action=DescribeDomains' })
-https.request(opts, function(res) { res.pipe(process.stdout) }).end()
+request(aws4.sign({ service: 'cloudsearch', path: '/?Action=DescribeDomains' }))
 ```
 
 API
