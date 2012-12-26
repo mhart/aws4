@@ -7,11 +7,26 @@ var opts = { host: 'sqs.us-east-1.amazonaws.com', path: '/?Action=ListQueues' }
 
 aws4.sign(opts) // assumes AWS credentials are available in process.env
 
-// opts.headers now contains the signed AWS headers, and is ready for
-// use in standard node.js http(s) requests
+console.log(opts)
+/*
+{
+  host: 'sqs.us-east-1.amazonaws.com',
+  path: '/?Action=ListQueues',
+  headers: {
+    Host: 'sqs.us-east-1.amazonaws.com',
+    'X-Amz-Date': '20121226T061030Z',
+    Authorization: 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, SignedHeaders=host;x-amz-date, Signature=d847efb54cd60f0a256174848f26e43af4b5168dbec3118dc9fd84e942285791'
+  }
+}
+*/
 
-// eg, pipe the SOAP response from the above SQS request to stdout
+// we can now use this to query AWS using the standard node.js http API
 http.request(opts, function(res) { res.pipe(process.stdout) }).end()
+/*
+<?xml version="1.0"?>
+<ListQueuesResponse xmlns="http://queue.amazonaws.com/doc/2012-11-05/">
+...
+*/
 
 // you can pass AWS credentials in explicitly
 aws4.sign(opts, { accessKeyId: '', secretAccessKey: '' })
@@ -25,6 +40,10 @@ function request(o) { https.request(o, function(res) { res.pipe(process.stdout) 
 // aws4 can infer the HTTP method if a body is passed in
 // method will be POST and Content-Type: 'application/x-www-form-urlencoded'
 request(aws4.sign({ service: 'iam', body: 'Action=ListGroups&Version=2010-05-08' }))
+/*
+<ListGroupsResponse xmlns="https://iam.amazonaws.com/doc/2010-05-08/">
+...
+*/
 
 // can specify any custom option or header as per usual
 request(aws4.sign({
@@ -38,12 +57,29 @@ request(aws4.sign({
   },
   body: '{}'
 }))
+/*
+{"TableNames":[]}
+...
+*/
 
 // works with all other services that support Signature Version 4
 
 request(aws4.sign({ service: 'sts', path: '/?Action=GetSessionToken&Version=2011-06-15' }))
+/*
+<GetSessionTokenResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+...
+*/
 
 request(aws4.sign({ service: 'glacier', path: '/-/vaults', headers: { 'X-Amz-Glacier-Version': '2012-06-01' } }))
+/*
+{"Marker":null,"VaultList":[]}
+...
+*/
 
 request(aws4.sign({ service: 'cloudsearch', path: '/?Action=DescribeDomains' }))
+/*
+<DescribeDomainsResponse xmlns="http://cloudsearch.amazonaws.com/doc/2011-02-01">
+...
+*/
+
 
