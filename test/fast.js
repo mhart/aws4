@@ -10,13 +10,12 @@ var should = require('should')
 describe('aws4', function() {
 
   // Ensure we restore process.env in case a test modifies it
-  var env = {
-    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY
-  }
+  var envAccessKeyId     = process.env.AWS_ACCESS_KEY_ID
+    , envSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+
   after(function() {
-    process.env.AWS_ACCESS_KEY_ID = env.AWS_ACCESS_KEY_ID
-    process.env.AWS_SECRET_ACCESS_KEY = env.AWS_SECRET_ACCESS_KEY
+    process.env.AWS_ACCESS_KEY_ID = envAccessKeyId
+    process.env.AWS_SECRET_ACCESS_KEY = envSecretAccessKey
   })
 
   describe('#sign() with no host or region', function() {
