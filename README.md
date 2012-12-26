@@ -1,10 +1,11 @@
 aws4
--------------
+----
 
 [![Build Status](https://secure.travis-ci.org/mhart/aws4.png?branch=master)](http://travis-ci.org/mhart/aws4)
 
 A small utility to sign vanilla node.js http(s) request options using Amazon's
 [AWS Signature Version 4](http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html).
+
 It also provides defaults for a number of core AWS headers and
 request parameters, making it a very easy to query AWS services, or
 build out a fully-featured AWS library.
@@ -113,3 +114,15 @@ export AWS_ACCESS_KEY_ID="<your-access-key-id>"
 ```
 
 (will also use `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` if available)
+
+Thanks
+------
+
+Thanks to [@jed](https://github.com/jed) for his
+[dynamo-client](https://github.com/jed/dynamo-client) lib where I first
+committed and subsequently extracted this code.
+
+Also thanks to the
+[official node.js AWS SDK](https://github.com/aws/aws-sdk-js) for giving
+me a start on implementing the v4 signature.
+
