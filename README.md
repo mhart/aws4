@@ -29,14 +29,14 @@ aws4.sign(opts) // assumes AWS credentials are available in process.env
 // eg, pipe the SOAP response from the above SQS request to stdout
 http.request(opts, function(res) { res.pipe(process.stdout) }).end()
 
-// create a utility function to pipe to stdout (with https this time)
-function request(o) { https.request(o, function(res) { res.pipe(process.stdout) }).end(o.body || '') }
-
 // you can pass AWS credentials in explicitly
 aws4.sign(opts, { accessKeyId: '', secretAccessKey: '' })
 
 // aws4 can infer the host from a service and region
 opts = aws4.sign({ service: 'sqs', region: 'us-east-1', path: '/?Action=ListQueues' })
+
+// create a utility function to pipe to stdout (with https this time)
+function request(o) { https.request(o, function(res) { res.pipe(process.stdout) }).end(o.body || '') }
 
 // aws4 can infer the HTTP method if a body is passed in
 // method will be POST and Content-Type: 'application/x-www-form-urlencoded'
