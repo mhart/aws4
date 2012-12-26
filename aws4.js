@@ -7,7 +7,7 @@ var crypto = require('crypto')
 // credentials: { accessKeyId, secretAccessKey, [sessionToken] }
 function RequestSigner(request, credentials) {
   var headers = request.headers || {}
-    , hostParts = this.matchHost(request.host || headers['Host'])
+    , hostParts = this.matchHost(request.hostname || request.host || headers['Host'])
     , date = new Date(headers['Date'] || new Date)
 
   this.request = request
@@ -33,10 +33,13 @@ RequestSigner.prototype.sign = function() {
   var request = this.request
     , headers = request.headers = (request.headers || {})
 
-  if (!request.method) request.method = request.body ? 'POST' : 'GET'
+  if (!request.method && request.body)
+    request.method = 'POST'
 
-  if (!headers['Host']) headers['Host'] = request.host || this.createHost()
-  if (!request.host) request.host = headers['Host']
+  if (!headers['Host'])
+    headers['Host'] = request.hostname || request.host || this.createHost()
+  if (!request.hostname && !request.host)
+    request.hostname = headers['Host']
 
   if (request.body && !headers['Content-Type'])
     headers['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -47,6 +50,8 @@ RequestSigner.prototype.sign = function() {
     headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
   headers['Authorization'] = this.authHeader()
+
+  return request
 }
 
 RequestSigner.prototype.authHeader = function() {
@@ -80,7 +85,7 @@ RequestSigner.prototype.stringToSign = function() {
 RequestSigner.prototype.canonicalString = function() {
   var pathParts = (this.request.path || '/').split('?', 2)
   return [
-    this.request.method,
+    this.request.method || 'GET',
     pathParts[0] || '/',
     pathParts[1] || '',
     this.canonicalHeaders() + '\n',
