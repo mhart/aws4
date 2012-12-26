@@ -112,6 +112,15 @@ export AWS_ACCESS_KEY_ID="<your-access-key-id>"
 
 (will also use `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` if available)
 
+Installation
+------------
+
+With [npm](http://npmjs.org/) do:
+
+```
+npm install aws4
+```
+
 Thanks
 ------
 
