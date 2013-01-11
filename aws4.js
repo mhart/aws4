@@ -33,8 +33,14 @@ RequestSigner.prototype.matchHost = function(host) {
   return (match || []).slice(1, 3)
 }
 
+// http://docs.aws.amazon.com/general/latest/gr/rande.html
+RequestSigner.prototype.isSingleRegion = function() {
+  return ['cloudfront', 'ls', 'route53', 'iam', 'importexport', 'sts']
+    .indexOf(this.service) >= 0
+}
+
 RequestSigner.prototype.createHost = function() {
-  var region = ~['iam', 'sts'].indexOf(this.service) ? '' : '.' + this.region
+  var region = this.isSingleRegion() ? '' : '.' + this.region
   return this.service + region + '.amazonaws.com'
 }
 
@@ -55,7 +61,7 @@ RequestSigner.prototype.sign = function() {
     request.hostname = headers['Host'] || headers['host']
 
   if (request.body && !headers['Content-Type'] && !headers['content-type'])
-    headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
 
   headers['X-Amz-Date'] = this.datetime
 

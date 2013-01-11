@@ -52,9 +52,14 @@ describe('aws4', function() {
 
   describe('#sign() with no host or region', function() {
     it('should add hostname and default region', function() {
-      var opts = aws4.sign({ service: 'sqs', headers: { Date: date } })
+      var opts = aws4.sign({ service: 'sqs' })
       opts.hostname.should.equal('sqs.us-east-1.amazonaws.com')
       opts.headers['Host'].should.equal('sqs.us-east-1.amazonaws.com')
+    })
+    it('should add hostname and no region if service is regionless', function() {
+      var opts = aws4.sign({ service: 'iam' })
+      opts.hostname.should.equal('iam.amazonaws.com')
+      opts.headers['Host'].should.equal('iam.amazonaws.com')
     })
     it('should populate AWS headers correctly', function() {
       var opts = aws4.sign({ service: 'sqs', headers: { Date: date } })
@@ -94,7 +99,7 @@ describe('aws4', function() {
     })
     it('should set Content-Type', function() {
       var opts = aws4.sign({ body: 'SomeAction' })
-      opts.headers['Content-Type'].should.equal('application/x-www-form-urlencoded')
+      opts.headers['Content-Type'].should.equal('application/x-www-form-urlencoded; charset=utf-8')
     })
   })
 
