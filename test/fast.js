@@ -24,6 +24,14 @@ describe('aws4', function() {
     process.env.AWS_SECRET_ACCESS_KEY = envSecretAccessKey
   })
 
+  describe('#sign() when constructed with string url', function() {
+    it('should parse into request correctly', function() {
+      var signer = new aws4.RequestSigner('http://sqs.us-east-1.amazonaws.com/')
+      signer.request.headers = { Date: date }
+      signer.sign().headers['Authorization'].should.equal(auth)
+    })
+  })
+
   describe('#sign() with no credentials', function() {
     it('should use process.env values', function() {
       var opts = aws4.sign({ service: 'sqs', headers: { Date: date } })
@@ -34,7 +42,7 @@ describe('aws4', function() {
   describe('#sign() with credentials', function() {
     it('should use passed in values', function() {
       var cred = { accessKeyId: 'A', secretAccessKey: 'B' }
-      var opts = aws4.sign({ service: 'sqs', headers: { Date: date } }, cred)
+        , opts = aws4.sign({ service: 'sqs', headers: { Date: date } }, cred)
       opts.headers['Authorization'].should.equal(
         'AWS4-HMAC-SHA256 Credential=A/20121226/us-east-1/sqs/aws4_request, ' +
         'SignedHeaders=date;host;x-amz-date, ' +
