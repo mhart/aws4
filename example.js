@@ -38,7 +38,7 @@ opts = aws4.sign({ service: 'sqs', region: 'us-east-1', path: '/?Action=ListQueu
 function request(o) { https.request(o, function(res) { res.pipe(process.stdout) }).end(o.body || '') }
 
 // aws4 can infer the HTTP method if a body is passed in
-// method will be POST and Content-Type: 'application/x-www-form-urlencoded'
+// method will be POST and Content-Type: 'application/x-www-form-urlencoded; charset=utf-8'
 request(aws4.sign({ service: 'iam', body: 'Action=ListGroups&Version=2010-05-08' }))
 /*
 <ListGroupsResponse xmlns="https://iam.amazonaws.com/doc/2010-05-08/">

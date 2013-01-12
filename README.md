@@ -59,7 +59,7 @@ opts = aws4.sign({ service: 'sqs', region: 'us-east-1', path: '/?Action=ListQueu
 function request(o) { https.request(o, function(res) { res.pipe(process.stdout) }).end(o.body || '') }
 
 // aws4 can infer the HTTP method if a body is passed in
-// method will be POST and Content-Type: 'application/x-www-form-urlencoded'
+// method will be POST and Content-Type: 'application/x-www-form-urlencoded; charset=utf-8'
 request(aws4.sign({ service: 'iam', body: 'Action=ListGroups&Version=2010-05-08' }))
 /*
 <ListGroupsResponse xmlns="https://iam.amazonaws.com/doc/2010-05-08/">
@@ -127,7 +127,8 @@ populated if they don't already exist:
 - `service` (will be calculated from `hostname` or `host` if not given)
 - `region` (will be calculated from `hostname` or `host` or use `'us-east-1'` if not given)
 - `headers['Host']` (will use `hostname` or `host` or be calculated if not given)
-- `headers['Content-Type']` (will use `'application/x-www-form-urlencoded'` if not given and there is a `body`)
+- `headers['Content-Type']` (will use `'application/x-www-form-urlencoded; charset=utf-8'`
+  if not given and there is a `body`)
 - `headers['Date']` (used to calculate the signature date if given, otherwise `new Date` is used)
 
 Your AWS credentials (which can be found in your
