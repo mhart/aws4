@@ -102,6 +102,63 @@ request(aws4.sign({ service: 'cloudsearch', path: '/?Action=DescribeDomains' }))
 <DescribeDomainsResponse xmlns="http://cloudsearch.amazonaws.com/doc/2011-02-01">
 ...
 */
+
+request(aws4.sign({ service: 'ses', path: '/?Action=ListIdentities' }))
+/*
+<ListIdentitiesResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
+...
+*/
+
+request(aws4.sign({ service: 'autoscaling', path: '/?Action=DescribeAutoScalingInstances&Version=2011-01-01' }))
+/*
+<DescribeAutoScalingInstancesResponse xmlns="http://autoscaling.amazonaws.com/doc/2011-01-01/">
+...
+*/
+
+request(aws4.sign({ service: 'elasticloadbalancing', path: '/?Action=DescribeLoadBalancers&Version=2012-06-01' }))
+/*
+<DescribeLoadBalancersResponse xmlns="http://elasticloadbalancing.amazonaws.com/doc/2012-06-01/">
+...
+*/
+
+request(aws4.sign({ service: 'cloudformation', path: '/?Action=ListStacks&Version=2010-05-15' }))
+/*
+<ListStacksResponse xmlns="http://cloudformation.amazonaws.com/doc/2010-05-15/">
+...
+*/
+
+request(aws4.sign({ service: 'elasticbeanstalk', path: '/?Action=ListAvailableSolutionStacks&Version=2010-12-01' }))
+/*
+<ListAvailableSolutionStacksResponse xmlns="http://elasticbeanstalk.amazonaws.com/docs/2010-12-01/">
+...
+*/
+
+request(aws4.sign({ service: 'storagegateway', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'StorageGateway_20120630.ListGateways'
+}}))
+/*
+{"Gateways":[]}
+...
+*/
+
+request(aws4.sign({ service: 'datapipeline', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'DataPipeline.ListPipelines'
+}}))
+/*
+{"hasMoreResults":false,"pipelineIdList":[]}
+...
+*/
+
+request(aws4.sign({ service: 'directconnect', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'OvertureService.DescribeConnections'
+}}))
+/*
+{"connections":[]}
+...
+*/
 ```
 
 API

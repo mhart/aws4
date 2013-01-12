@@ -26,6 +26,9 @@ function RequestSigner(request, credentials) {
 
   this.service = request.service || hostParts[0] || ''
   this.region = request.region || hostParts[1] || 'us-east-1'
+
+  // SES uses a different domain from the service name
+  if (this.service === 'email') this.service = 'ses'
 }
 
 RequestSigner.prototype.matchHost = function(host) {
@@ -41,7 +44,8 @@ RequestSigner.prototype.isSingleRegion = function() {
 
 RequestSigner.prototype.createHost = function() {
   var region = this.isSingleRegion() ? '' : '.' + this.region
-  return this.service + region + '.amazonaws.com'
+    , service = this.service === 'ses' ? 'email' : this.service
+  return service + region + '.amazonaws.com'
 }
 
 RequestSigner.prototype.sign = function() {

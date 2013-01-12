@@ -8,12 +8,21 @@
     "amazon",
     "aws",
     "signature",
+    "autoscaling",
+    "cloudformation",
+    "elasticloadbalancing",
+    "elb",
+    "elasticbeanstalk",
     "cloudsearch",
     "dynamodb",
     "glacier",
     "sqs",
     "iam",
-    "sts"
+    "sts",
+    "ses",
+    "storagegateway",
+    "datapipeline",
+    "directconnect"
   ],
   "repository": {
     "type": "git",
