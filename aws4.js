@@ -72,6 +72,7 @@ RequestSigner.prototype.sign = function() {
   if (this.credentials.sessionToken)
     headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
+  ;delete headers['Authorization']
   headers['Authorization'] = this.authHeader()
 
   return request
