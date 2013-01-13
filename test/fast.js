@@ -120,8 +120,8 @@ describe('aws4', function() {
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers['Authorization'].should.equal(
         'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/ap-southeast-2/dynamodb/aws4_request, ' +
-        'SignedHeaders=content-type;date;host;x-amz-date;x-amz-target, ' +
-        'Signature=a5520eb980625ab21058d3df3576f56b412f2999711a48b6273e8eeb084caa7b')
+        'SignedHeaders=content-length;content-type;date;host;x-amz-date;x-amz-target, ' +
+        'Signature=f9a00417d284dfe2cfdef809652c1d54add4e159835a0c69ac8cbdaa227a5000')
     })
   })
 

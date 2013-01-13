@@ -67,12 +67,15 @@ RequestSigner.prototype.sign = function() {
   if (request.body && !headers['Content-Type'] && !headers['content-type'])
     headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
 
+  if (request.body && !headers['Content-Length'] && !headers['content-length'])
+    headers['Content-Length'] = Buffer.byteLength(request.body)
+
   headers['X-Amz-Date'] = this.datetime
 
   if (this.credentials.sessionToken)
     headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
-  ;delete headers['Authorization']
+  delete headers['Authorization']
   headers['Authorization'] = this.authHeader()
 
   return request
