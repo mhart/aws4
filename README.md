@@ -6,6 +6,22 @@ aws4
 A small utility to sign vanilla node.js http(s) request options using Amazon's
 [AWS Signature Version 4](http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html).
 
+This signature is supported by an increasing number of Amazon services, including
+[SQS](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/),
+[IAM](http://docs.aws.amazon.com/IAM/latest/APIReference/),
+[STS](http://docs.aws.amazon.com/STS/latest/APIReference/),
+[DynamoDB](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API.html),
+[Glacier](http://docs.aws.amazon.com/amazonglacier/latest/dev/amazon-glacier-api.html),
+[CloudSearch](http://docs.aws.amazon.com/cloudsearch/latest/developerguide/APIReq.html),
+[Elastic Load Balancing](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/APIReference/),
+[CloudFormation](http://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/),
+[Elastic Beanstalk](http://docs.aws.amazon.com/elasticbeanstalk/latest/api/),
+[Storage Gateway](http://docs.aws.amazon.com/storagegateway/latest/userguide/AWSStorageGatewayAPI.html),
+[Data Pipeline](http://docs.aws.amazon.com/datapipeline/latest/APIReference/),
+[Direct Connect](http://docs.aws.amazon.com/directconnect/latest/APIReference/),
+[SES](http://docs.aws.amazon.com/ses/latest/APIReference/) and
+[AutoScaling](http://docs.aws.amazon.com/AutoScaling/latest/APIReference/).
+
 It also provides defaults for a number of core AWS headers and
 request parameters, making it a very easy to query AWS services, or
 build out a fully-featured AWS library.
