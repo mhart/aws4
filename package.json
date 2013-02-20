@@ -24,7 +24,10 @@
     "datapipeline",
     "directconnect",
     "redshift",
-    "opsworks"
+    "opsworks",
+    "rds",
+    "monitoring",
+    "cloudwatch"
   ],
   "repository": {
     "type": "git",

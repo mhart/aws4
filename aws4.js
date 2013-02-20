@@ -38,6 +38,9 @@ RequestSigner.prototype.matchHost = function(host) {
 
 // http://docs.aws.amazon.com/general/latest/gr/rande.html
 RequestSigner.prototype.isSingleRegion = function() {
+  // Special case for SimpleDB in us-east-1
+  if (this.service === 'sdb' && this.region === 'us-east-1') return true
+
   return ['cloudfront', 'ls', 'route53', 'iam', 'importexport', 'sts']
     .indexOf(this.service) >= 0
 }

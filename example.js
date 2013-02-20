@@ -15,7 +15,7 @@ console.log(opts)
   headers: {
     Host: 'sqs.us-east-1.amazonaws.com',
     'X-Amz-Date': '20121226T061030Z',
-    Authorization: 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, SignedHeaders=host;x-amz-date, Signature=d847efb54cd60f0a256174848f26e43af4b5168dbec3118dc9fd84e942285791'
+    Authorization: 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, ...'
   }
 }
 */
@@ -112,6 +112,24 @@ request(aws4.sign({ service: 'elasticbeanstalk', path: '/?Action=ListAvailableSo
 ...
 */
 
+request(aws4.sign({ service: 'rds', path: '/?Action=DescribeDBInstances&Version=2012-09-17' }))
+/*
+<DescribeDBInstancesResponse xmlns="http://rds.amazonaws.com/doc/2012-09-17/">
+...
+*/
+
+request(aws4.sign({ service: 'monitoring', path: '/?Action=ListMetrics&Version=2010-08-01' }))
+/*
+<ListMetricsResponse xmlns="http://monitoring.amazonaws.com/doc/2010-08-01/">
+...
+*/
+
+request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Version=2012-12-01' }))
+/*
+<DescribeClustersResponse xmlns="http://redshift.amazonaws.com/doc/2012-12-01/">
+...
+*/
+
 request(aws4.sign({ service: 'storagegateway', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
   'X-Amz-Target': 'StorageGateway_20120630.ListGateways'
@@ -139,12 +157,6 @@ request(aws4.sign({ service: 'directconnect', body: '{}', headers: {
 ...
 */
 
-request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Version=2012-12-01' }))
-/*
-<DescribeClustersResponse xmlns="http://redshift.amazonaws.com/doc/2012-12-01/">
-...
-*/
-
 request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
   'X-Amz-Target': 'OpsWorks_20130218.DescribeInstances'
@@ -152,5 +164,32 @@ request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
 /*
 {"Instances":[]}
 ...
+*/
+
+// Still not updated to v4...
+
+//request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
+
+//request(aws4.sign({ service: 'ec2', path: '/?Action=DescribeRegions&Version=2012-12-01' }))
+
+//request(aws4.sign({ service: 'elasticache', path: '/?Action=DescribeCacheClusters&Version=2012-11-15' }))
+
+//request(aws4.sign({ service: 'elasticmapreduce', path: '/?Action=DescribeJobFlows&Version=2009-03-31' }))
+
+//request(aws4.sign({ service: 'importexport', path: '/?Action=ListJobs&Version=2010-06-01' }))
+
+//request(aws4.sign({ service: 'sdb', path: '/?Action=ListDomains&Version=2009-04-15' }))
+
+//request(aws4.sign({ service: 'route53', path: '/2012-02-29/hostedzone' }))
+
+/*
+request(aws4.sign({
+  service: 'swf',
+  body: '{"registrationStatus":"REGISTERED"}',
+  headers: {
+    'Content-Type': 'application/x-amz-json-1.0',
+    'X-Amz-Target': 'SimpleWorkflowService.ListDomains'
+  }
+}))
 */
 

@@ -11,6 +11,8 @@ This signature is supported by an increasing number of Amazon services, includin
 [IAM](http://docs.aws.amazon.com/IAM/latest/APIReference/),
 [STS](http://docs.aws.amazon.com/STS/latest/APIReference/),
 [DynamoDB](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API.html),
+[RDS](http://docs.aws.amazon.com/AmazonRDS/latest/APIReference/),
+[CloudWatch](http://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/),
 [Glacier](http://docs.aws.amazon.com/amazonglacier/latest/dev/amazon-glacier-api.html),
 [CloudSearch](http://docs.aws.amazon.com/cloudsearch/latest/developerguide/APIReq.html),
 [Elastic Load Balancing](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/APIReference/),
@@ -19,6 +21,8 @@ This signature is supported by an increasing number of Amazon services, includin
 [Storage Gateway](http://docs.aws.amazon.com/storagegateway/latest/userguide/AWSStorageGatewayAPI.html),
 [Data Pipeline](http://docs.aws.amazon.com/datapipeline/latest/APIReference/),
 [Direct Connect](http://docs.aws.amazon.com/directconnect/latest/APIReference/),
+[Redshift](http://docs.aws.amazon.com/redshift/latest/APIReference/),
+[OpsWorks](http://docs.aws.amazon.com/opsworks/latest/APIReference/),
 [SES](http://docs.aws.amazon.com/ses/latest/APIReference/) and
 [AutoScaling](http://docs.aws.amazon.com/AutoScaling/latest/APIReference/).
 
@@ -47,7 +51,7 @@ console.log(opts)
   headers: {
     Host: 'sqs.us-east-1.amazonaws.com',
     'X-Amz-Date': '20121226T061030Z',
-    Authorization: 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, SignedHeaders=host;x-amz-date, Signature=d847efb54cd60f0a256174848f26e43af4b5168dbec3118dc9fd84e942285791'
+    Authorization: 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, ...'
   }
 }
 */
@@ -149,6 +153,24 @@ request(aws4.sign({ service: 'elasticbeanstalk', path: '/?Action=ListAvailableSo
 ...
 */
 
+request(aws4.sign({ service: 'rds', path: '/?Action=DescribeDBInstances&Version=2012-09-17' }))
+/*
+<DescribeDBInstancesResponse xmlns="http://rds.amazonaws.com/doc/2012-09-17/">
+...
+*/
+
+request(aws4.sign({ service: 'monitoring', path: '/?Action=ListMetrics&Version=2010-08-01' }))
+/*
+<ListMetricsResponse xmlns="http://monitoring.amazonaws.com/doc/2010-08-01/">
+...
+*/
+
+request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Version=2012-12-01' }))
+/*
+<DescribeClustersResponse xmlns="http://redshift.amazonaws.com/doc/2012-12-01/">
+...
+*/
+
 request(aws4.sign({ service: 'storagegateway', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
   'X-Amz-Target': 'StorageGateway_20120630.ListGateways'
@@ -173,12 +195,6 @@ request(aws4.sign({ service: 'directconnect', body: '{}', headers: {
 }}))
 /*
 {"connections":[]}
-...
-*/
-
-request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Version=2012-12-01' }))
-/*
-<DescribeClustersResponse xmlns="http://redshift.amazonaws.com/doc/2012-12-01/">
 ...
 */
 
