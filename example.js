@@ -139,3 +139,18 @@ request(aws4.sign({ service: 'directconnect', body: '{}', headers: {
 ...
 */
 
+request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Version=2012-12-01' }))
+/*
+<DescribeClustersResponse xmlns="http://redshift.amazonaws.com/doc/2012-12-01/">
+...
+*/
+
+request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'OpsWorks_20130218.DescribeInstances'
+}}))
+/*
+{"Instances":[]}
+...
+*/
+

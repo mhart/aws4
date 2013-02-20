@@ -22,7 +22,9 @@
     "ses",
     "storagegateway",
     "datapipeline",
-    "directconnect"
+    "directconnect",
+    "redshift",
+    "opsworks"
   ],
   "repository": {
     "type": "git",
