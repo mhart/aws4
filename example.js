@@ -1,6 +1,6 @@
-var http  = require('http')
-  , https = require('https')
-  , aws4  = require('aws4')
+var http  = require('http'),
+    https = require('https'),
+    aws4  = require('aws4')
 
 // given an options object you could pass to http.request
 var opts = { host: 'sqs.us-east-1.amazonaws.com', path: '/?Action=ListQueues' }

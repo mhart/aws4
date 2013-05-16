@@ -1,6 +1,6 @@
-var aws4   = exports
-var url = require('url')
-var crypto = require('crypto')
+var aws4   = exports,
+    url    = require('url'),
+    crypto = require('crypto')
 
 // http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html
 
@@ -18,8 +18,8 @@ function RequestSigner(request, credentials) {
 
   if (typeof request === 'string') request = url.parse(request)
 
-  var headers = request.headers || {}
-    , hostParts = this.matchHost(request.hostname || request.host || headers['Host'])
+  var headers = request.headers || {},
+      hostParts = this.matchHost(request.hostname || request.host || headers.Host)
 
   this.request = request
   this.credentials = credentials || this.defaultCredentials()
@@ -46,15 +46,15 @@ RequestSigner.prototype.isSingleRegion = function() {
 }
 
 RequestSigner.prototype.createHost = function() {
-  var region = this.isSingleRegion() ? '' : '.' + this.region
-    , service = this.service === 'ses' ? 'email' : this.service
+  var region = this.isSingleRegion() ? '' : '.' + this.region,
+      service = this.service === 'ses' ? 'email' : this.service
   return service + region + '.amazonaws.com'
 }
 
 RequestSigner.prototype.sign = function() {
-  var request = this.request
-    , headers = request.headers = (request.headers || {})
-    , date = new Date(headers['Date'] || new Date)
+  var request = this.request,
+      headers = request.headers = (request.headers || {}),
+      date = new Date(headers.Date || new Date)
 
   this.datetime = date.toISOString().replace(/[:\-]|\.\d{3}/g, '')
   this.date = this.datetime.substr(0, 8)
@@ -62,10 +62,10 @@ RequestSigner.prototype.sign = function() {
   if (!request.method && request.body)
     request.method = 'POST'
 
-  if (!headers['Host'] && !headers['host'])
-    headers['Host'] = request.hostname || request.host || this.createHost()
+  if (!headers.Host && !headers.host)
+    headers.Host = request.hostname || request.host || this.createHost()
   if (!request.hostname && !request.host)
-    request.hostname = headers['Host'] || headers['host']
+    request.hostname = headers.Host || headers.host
 
   if (request.body && !headers['Content-Type'] && !headers['content-type'])
     headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
@@ -78,8 +78,8 @@ RequestSigner.prototype.sign = function() {
   if (this.credentials.sessionToken)
     headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
-  delete headers['Authorization']
-  headers['Authorization'] = this.authHeader()
+  if (headers.Authorization) delete headers.Authorization
+  headers.Authorization = this.authHeader()
 
   return request
 }
@@ -93,10 +93,10 @@ RequestSigner.prototype.authHeader = function() {
 }
 
 RequestSigner.prototype.signature = function() {
-  var kDate = hmac('AWS4' + this.credentials.secretAccessKey, this.date)
-    , kRegion = hmac(kDate, this.region)
-    , kService = hmac(kRegion, this.service)
-    , kCredentials = hmac(kService, 'aws4_request')
+  var kDate = hmac('AWS4' + this.credentials.secretAccessKey, this.date),
+      kRegion = hmac(kDate, this.region),
+      kService = hmac(kRegion, this.service),
+      kCredentials = hmac(kService, 'aws4_request')
   return hmac(kCredentials, this.stringToSign(), 'hex')
 }
 
