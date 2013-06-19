@@ -64,6 +64,12 @@ request(aws4.sign({
 
 // works with all other services that support Signature Version 4
 
+request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
+/*
+<ListTopicsResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+...
+*/
+
 request(aws4.sign({ service: 'sts', path: '/?Action=GetSessionToken&Version=2011-06-15' }))
 /*
 <GetSessionTokenResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
@@ -167,8 +173,6 @@ request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
 */
 
 // Still not updated to v4...
-
-//request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
 
 //request(aws4.sign({ service: 'ec2', path: '/?Action=DescribeRegions&Version=2012-12-01' }))
 

@@ -8,6 +8,7 @@ A small utility to sign vanilla node.js http(s) request options using Amazon's
 
 This signature is supported by an increasing number of Amazon services, including
 [SQS](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/),
+[SNS](http://docs.aws.amazon.com/sns/latest/api/),
 [IAM](http://docs.aws.amazon.com/IAM/latest/APIReference/),
 [STS](http://docs.aws.amazon.com/STS/latest/APIReference/),
 [DynamoDB](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API.html),
@@ -104,6 +105,12 @@ request(aws4.sign({
 */
 
 // works with all other services that support Signature Version 4
+
+request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
+/*
+<ListTopicsResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+...
+*/
 
 request(aws4.sign({ service: 'sts', path: '/?Action=GetSessionToken&Version=2011-06-15' }))
 /*
