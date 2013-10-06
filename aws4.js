@@ -1,6 +1,8 @@
-var aws4   = exports,
-    url    = require('url'),
-    crypto = require('crypto')
+var aws4 = exports,
+    url = require('url'),
+    crypto = require('crypto'),
+    lru = require('lru-cache'),
+    credentialsCache = lru(1000)
 
 // http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html
 
@@ -93,10 +95,15 @@ RequestSigner.prototype.authHeader = function() {
 }
 
 RequestSigner.prototype.signature = function() {
-  var kDate = hmac('AWS4' + this.credentials.secretAccessKey, this.date),
-      kRegion = hmac(kDate, this.region),
-      kService = hmac(kRegion, this.service),
-      kCredentials = hmac(kService, 'aws4_request')
+  var cacheKey = [this.credentials.secretAccessKey, this.date, this.region, this.service].join(),
+      kDate, kRegion, kService, kCredentials = credentialsCache.get(cacheKey)
+  if (!kCredentials) {
+    kDate = hmac('AWS4' + this.credentials.secretAccessKey, this.date)
+    kRegion = hmac(kDate, this.region)
+    kService = hmac(kRegion, this.service)
+    kCredentials = hmac(kService, 'aws4_request')
+    credentialsCache.set(cacheKey, kCredentials)
+  }
   return hmac(kCredentials, this.stringToSign(), 'hex')
 }
 
