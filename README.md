@@ -37,7 +37,7 @@ This signature is supported by nearly all Amazon services, including
 [AutoScaling](http://docs.aws.amazon.com/AutoScaling/latest/APIReference/) and
 [Route53 Domain Registration](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rpc.html).
 
-Indeed, the only AWS services that *don't* support v4 as of 09-09-2014 are
+Indeed, the only AWS services that *don't* support v4 as of 2014-09-09 are
 [Import/Export](http://docs.aws.amazon.com/AWSImportExport/latest/DG/api-reference.html),
 [SimpleDB](http://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API.html) and
 [Route53 Hosted Zones, etc](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rest.html)
