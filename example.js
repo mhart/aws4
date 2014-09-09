@@ -64,6 +64,12 @@ request(aws4.sign({
 
 // works with all other services that support Signature Version 4
 
+request(aws4.sign({ service: 'ec2', path: '/?Action=DescribeRegions&Version=2014-06-15' }))
+/*
+<DescribeRegionsResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/">
+...
+*/
+
 request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
 /*
 <ListTopicsResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
@@ -136,6 +142,24 @@ request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Versio
 ...
 */
 
+request(aws4.sign({ service: 'cloudfront', path: '/2014-05-31/distribution' }))
+/*
+<DistributionList xmlns="http://cloudfront.amazonaws.com/doc/2014-05-31/">
+...
+*/
+
+request(aws4.sign({ service: 'elasticache', path: '/?Action=DescribeCacheClusters&Version=2014-07-15' }))
+/*
+<DescribeCacheClustersResponse xmlns="http://elasticache.amazonaws.com/doc/2014-07-15/">
+...
+*/
+
+request(aws4.sign({ service: 'elasticmapreduce', path: '/?Action=DescribeJobFlows&Version=2009-03-31' }))
+/*
+<DescribeJobFlowsResponse xmlns="http://elasticmapreduce.amazonaws.com/doc/2009-03-31">
+...
+*/
+
 request(aws4.sign({ service: 'storagegateway', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
   'X-Amz-Target': 'StorageGateway_20120630.ListGateways'
@@ -172,21 +196,33 @@ request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
 ...
 */
 
-// Still not updated to v4...
-
-//request(aws4.sign({ service: 'ec2', path: '/?Action=DescribeRegions&Version=2012-12-01' }))
-
-//request(aws4.sign({ service: 'elasticache', path: '/?Action=DescribeCacheClusters&Version=2012-11-15' }))
-
-//request(aws4.sign({ service: 'elasticmapreduce', path: '/?Action=DescribeJobFlows&Version=2009-03-31' }))
-
-//request(aws4.sign({ service: 'importexport', path: '/?Action=ListJobs&Version=2010-06-01' }))
-
-//request(aws4.sign({ service: 'sdb', path: '/?Action=ListDomains&Version=2009-04-15' }))
-
-//request(aws4.sign({ service: 'route53', path: '/2012-02-29/hostedzone' }))
-
+request(aws4.sign({ service: 'route53domains', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'Route53Domains_v20140515.ListDomains'
+}}))
 /*
+{"Domains":[]}
+...
+*/
+
+request(aws4.sign({ service: 'kinesis', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'Kinesis_20131202.ListStreams'
+}}))
+/*
+{"HasMoreStreams":false,"StreamNames":[]}
+...
+*/
+
+request(aws4.sign({ service: 'cloudtrail', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'CloudTrail_20131101.DescribeTrails'
+}}))
+/*
+{"trailList":[]}
+...
+*/
+
 request(aws4.sign({
   service: 'swf',
   body: '{"registrationStatus":"REGISTERED"}',
@@ -195,5 +231,46 @@ request(aws4.sign({
     'X-Amz-Target': 'SimpleWorkflowService.ListDomains'
   }
 }))
+/*
+{"domainInfos":[]}
+...
 */
+
+request(aws4.sign({
+  service: 'cognito-identity',
+  body: JSON.stringify({
+    Operation: 'com.amazonaws.cognito.identity.model#ListIdentityPools',
+    Service: 'com.amazonaws.cognito.identity.model#AWSCognitoIdentityService',
+    Input: {MaxResults: 1},
+  }),
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Amz-Target': 'com.amazonaws.cognito.identity.model.AWSCognitoIdentityService.ListIdentityPools'
+  }
+}))
+/*
+{"Output":{"__type":"com.amazonaws.cognito.identity.model#ListIdentityPoolsResponse","IdentityPools":[],"NextToken":null},"Version":"1.0"}
+...
+*/
+
+request(aws4.sign({
+  service: 'mobileanalytics',
+  path: '/2014-06-05/events',
+  body: '{"events":[]}',
+  headers: {
+    'Content-Type': 'application/json',
+  }
+}))
+/*
+{"__type":"com.amazon.coral.validate#ValidationException","message":"1 validation error detected.
+...
+*/
+
+// Still not updated to v4...
+
+//request(aws4.sign({ service: 'route53', path: '/2013-04-01/hostedzone' }))
+
+//request(aws4.sign({ service: 'importexport', path: '/?Action=ListJobs&Version=2010-06-01' }))
+
+//request(aws4.sign({ service: 'sdb', path: '/?Action=ListDomains&Version=2009-04-15' }))
 

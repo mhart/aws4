@@ -6,14 +6,20 @@ aws4
 A small utility to sign vanilla node.js http(s) request options using Amazon's
 [AWS Signature Version 4](http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html).
 
-This signature is supported by an increasing number of Amazon services, including
+This signature is supported by nearly all Amazon services, including
+[EC2](http://docs.aws.amazon.com/AWSEC2/latest/APIReference/),
 [SQS](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/),
 [SNS](http://docs.aws.amazon.com/sns/latest/api/),
 [IAM](http://docs.aws.amazon.com/IAM/latest/APIReference/),
 [STS](http://docs.aws.amazon.com/STS/latest/APIReference/),
 [DynamoDB](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/API.html),
+[Kinesis](http://docs.aws.amazon.com/kinesis/latest/APIReference/),
 [RDS](http://docs.aws.amazon.com/AmazonRDS/latest/APIReference/),
 [CloudWatch](http://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/),
+[CloudFront](http://docs.aws.amazon.com/AmazonCloudFront/latest/APIReference/),
+[CloudTrail](http://docs.aws.amazon.com/awscloudtrail/latest/APIReference/),
+[ElastiCache](http://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/),
+[EMR](http://docs.aws.amazon.com/ElasticMapReduce/latest/API/),
 [Glacier](http://docs.aws.amazon.com/amazonglacier/latest/dev/amazon-glacier-api.html),
 [CloudSearch](http://docs.aws.amazon.com/cloudsearch/latest/developerguide/APIReq.html),
 [Elastic Load Balancing](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/APIReference/),
@@ -24,8 +30,17 @@ This signature is supported by an increasing number of Amazon services, includin
 [Direct Connect](http://docs.aws.amazon.com/directconnect/latest/APIReference/),
 [Redshift](http://docs.aws.amazon.com/redshift/latest/APIReference/),
 [OpsWorks](http://docs.aws.amazon.com/opsworks/latest/APIReference/),
-[SES](http://docs.aws.amazon.com/ses/latest/APIReference/) and
-[AutoScaling](http://docs.aws.amazon.com/AutoScaling/latest/APIReference/).
+[SES](http://docs.aws.amazon.com/ses/latest/APIReference/),
+[SWF](http://docs.aws.amazon.com/amazonswf/latest/apireference/),
+[Mobile Analytics](http://docs.aws.amazon.com/mobileanalytics/latest/ug/server-reference.html),
+[Cognito](http://docs.aws.amazon.com/cognitoidentity/latest/APIReference/),
+[AutoScaling](http://docs.aws.amazon.com/AutoScaling/latest/APIReference/) and
+[Route53 Domain Registration](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rpc.html).
+
+Indeed, the only AWS services that *don't* support v4 as of 09-09-2014 are
+[Import/Export](http://docs.aws.amazon.com/AWSImportExport/latest/DG/api-reference.html),
+[SimpleDB](http://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API.html) and
+[Route53 Hosted Zones, etc](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rest.html)
 
 It also provides defaults for a number of core AWS headers and
 request parameters, making it a very easy to query AWS services, or
@@ -106,6 +121,12 @@ request(aws4.sign({
 
 // works with all other services that support Signature Version 4
 
+request(aws4.sign({ service: 'ec2', path: '/?Action=DescribeRegions&Version=2014-06-15' }))
+/*
+<DescribeRegionsResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/">
+...
+*/
+
 request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
 /*
 <ListTopicsResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
@@ -178,6 +199,24 @@ request(aws4.sign({ service: 'redshift', path: '/?Action=DescribeClusters&Versio
 ...
 */
 
+request(aws4.sign({ service: 'cloudfront', path: '/2014-05-31/distribution' }))
+/*
+<DistributionList xmlns="http://cloudfront.amazonaws.com/doc/2014-05-31/">
+...
+*/
+
+request(aws4.sign({ service: 'elasticache', path: '/?Action=DescribeCacheClusters&Version=2014-07-15' }))
+/*
+<DescribeCacheClustersResponse xmlns="http://elasticache.amazonaws.com/doc/2014-07-15/">
+...
+*/
+
+request(aws4.sign({ service: 'elasticmapreduce', path: '/?Action=DescribeJobFlows&Version=2009-03-31' }))
+/*
+<DescribeJobFlowsResponse xmlns="http://elasticmapreduce.amazonaws.com/doc/2009-03-31">
+...
+*/
+
 request(aws4.sign({ service: 'storagegateway', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
   'X-Amz-Target': 'StorageGateway_20120630.ListGateways'
@@ -211,6 +250,76 @@ request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
 }}))
 /*
 {"Instances":[]}
+...
+*/
+
+request(aws4.sign({ service: 'route53domains', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'Route53Domains_v20140515.ListDomains'
+}}))
+/*
+{"Domains":[]}
+...
+*/
+
+request(aws4.sign({ service: 'kinesis', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'Kinesis_20131202.ListStreams'
+}}))
+/*
+{"HasMoreStreams":false,"StreamNames":[]}
+...
+*/
+
+request(aws4.sign({ service: 'cloudtrail', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'CloudTrail_20131101.DescribeTrails'
+}}))
+/*
+{"trailList":[]}
+...
+*/
+
+request(aws4.sign({
+  service: 'swf',
+  body: '{"registrationStatus":"REGISTERED"}',
+  headers: {
+    'Content-Type': 'application/x-amz-json-1.0',
+    'X-Amz-Target': 'SimpleWorkflowService.ListDomains'
+  }
+}))
+/*
+{"domainInfos":[]}
+...
+*/
+
+request(aws4.sign({
+  service: 'cognito-identity',
+  body: JSON.stringify({
+    Operation: 'com.amazonaws.cognito.identity.model#ListIdentityPools',
+    Service: 'com.amazonaws.cognito.identity.model#AWSCognitoIdentityService',
+    Input: {MaxResults: 1},
+  }),
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Amz-Target': 'com.amazonaws.cognito.identity.model.AWSCognitoIdentityService.ListIdentityPools'
+  }
+}))
+/*
+{"Output":{"__type":"com.amazonaws.cognito.identity.model#ListIdentityPoolsResponse","IdentityPools":[],"NextToken":null},"Version":"1.0"}
+...
+*/
+
+request(aws4.sign({
+  service: 'mobileanalytics',
+  path: '/2014-06-05/events',
+  body: '{"events":[]}',
+  headers: {
+    'Content-Type': 'application/json',
+  }
+}))
+/*
+{"__type":"com.amazon.coral.validate#ValidationException","message":"1 validation error detected.
 ...
 */
 ```
