@@ -360,7 +360,8 @@ can be specified in one of two ways:
 ```javascript
 aws4.sign(requestOptions, {
   secretAccessKey: "<your-secret-access-key>",
-  accessKeyId: "<your-access-key-id>"
+  accessKeyId: "<your-access-key-id>",
+  sessionToken: "<your-session-token>"
 })
 ```
 
@@ -369,9 +370,13 @@ aws4.sign(requestOptions, {
 ```
 export AWS_SECRET_ACCESS_KEY="<your-secret-access-key>"
 export AWS_ACCESS_KEY_ID="<your-access-key-id>"
+export AWS_SESSION_TOKEN="<your-session-token>"
 ```
 
 (will also use `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` if available)
+
+The `sessionToken` property and `AWS_SESSION_TOKEN` environment variable are optional for signing
+with [IAM STS temporary credentials](http://docs.aws.amazon.com/STS/latest/UsingSTS/using-temp-creds.html).
 
 Installation
 ------------

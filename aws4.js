@@ -159,7 +159,8 @@ RequestSigner.prototype.defaultCredentials = function() {
   var env = process.env
   return {
     accessKeyId:     env.AWS_ACCESS_KEY_ID     || env.AWS_ACCESS_KEY,
-    secretAccessKey: env.AWS_SECRET_ACCESS_KEY || env.AWS_SECRET_KEY
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY || env.AWS_SECRET_KEY,
+    sessionToken:    env.AWS_SESSION_TOKEN
   }
 }
 
