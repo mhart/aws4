@@ -48,12 +48,13 @@ This signature is supported by nearly all Amazon services, including
 [Route53](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rest.html) and
 [Route53 Domains](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rpc.html).
 
-Indeed, the only AWS services that *don't* support v4 (still v2) as of 2014-12-30 are
+Indeed, the only AWS services that *don't* support v4 as of 2014-12-30 are
 [Import/Export](http://docs.aws.amazon.com/AWSImportExport/latest/DG/api-reference.html) and
 [SimpleDB](http://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API.html)
+(they only support [AWS Signature Version 2](https://github.com/mhart/aws2)).
 
 It also provides defaults for a number of core AWS headers and
-request parameters, making it a very easy to query AWS services, or
+request parameters, making it very easy to query AWS services, or
 build out a fully-featured AWS library.
 
 Example
