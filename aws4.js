@@ -40,8 +40,8 @@ RequestSigner.prototype.matchHost = function(host) {
 
 // http://docs.aws.amazon.com/general/latest/gr/rande.html
 RequestSigner.prototype.isSingleRegion = function() {
-  // Special case for SimpleDB in us-east-1
-  if (this.service === 'sdb' && this.region === 'us-east-1') return true
+  // Special case for S3 and SimpleDB in us-east-1
+  if (['s3', 'sdb'].indexOf(this.service) >= 0 && this.region === 'us-east-1') return true
 
   return ['cloudfront', 'ls', 'route53', 'iam', 'importexport', 'sts']
     .indexOf(this.service) >= 0
@@ -79,6 +79,9 @@ RequestSigner.prototype.sign = function() {
 
   if (this.credentials.sessionToken)
     headers['X-Amz-Security-Token'] = this.credentials.sessionToken
+
+  if (this.service === 's3')
+    headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
 
   if (headers.Authorization) delete headers.Authorization
   headers.Authorization = this.authHeader()

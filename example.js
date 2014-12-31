@@ -5,6 +5,12 @@ var http  = require('http'),
 // given an options object you could pass to http.request
 var opts = { host: 'sqs.us-east-1.amazonaws.com', path: '/?Action=ListQueues' }
 
+// alternatively (as aws4 can infer the host):
+opts = { service: 'sqs', region: 'us-east-1', path: '/?Action=ListQueues' }
+
+// alternatively (as us-east-1 is default):
+opts = { service: 'sqs', path: '/?Action=ListQueues' }
+
 aws4.sign(opts) // assumes AWS credentials are available in process.env
 
 console.log(opts)
@@ -28,11 +34,8 @@ http.request(opts, function(res) { res.pipe(process.stdout) }).end()
 ...
 */
 
-// you can pass AWS credentials in explicitly
+// you can also pass AWS credentials in explicitly (otherwise taken from process.env)
 aws4.sign(opts, { accessKeyId: '', secretAccessKey: '' })
-
-// aws4 can infer the host from a service and region
-opts = aws4.sign({ service: 'sqs', region: 'us-east-1', path: '/?Action=ListQueues' })
 
 // create a utility function to pipe to stdout (with https this time)
 function request(o) { https.request(o, function(res) { res.pipe(process.stdout) }).end(o.body || '') }
@@ -64,13 +67,19 @@ request(aws4.sign({
 
 // works with all other services that support Signature Version 4
 
+request(aws4.sign({ service: 's3', path: '/' }))
+/*
+<ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+...
+*/
+
 request(aws4.sign({ service: 'ec2', path: '/?Action=DescribeRegions&Version=2014-06-15' }))
 /*
 <DescribeRegionsResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/">
 ...
 */
 
-request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics' }))
+request(aws4.sign({ service: 'sns', path: '/?Action=ListTopics&Version=2010-03-31' }))
 /*
 <ListTopicsResponse xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
 ...
@@ -82,19 +91,13 @@ request(aws4.sign({ service: 'sts', path: '/?Action=GetSessionToken&Version=2011
 ...
 */
 
-request(aws4.sign({ service: 'glacier', path: '/-/vaults', headers: { 'X-Amz-Glacier-Version': '2012-06-01' } }))
+request(aws4.sign({ service: 'cloudsearch', path: '/?Action=ListDomainNames&Version=2013-01-01' }))
 /*
-{"Marker":null,"VaultList":[]}
+<ListDomainNamesResponse xmlns="http://cloudsearch.amazonaws.com/doc/2013-01-01/">
 ...
 */
 
-request(aws4.sign({ service: 'cloudsearch', path: '/?Action=DescribeDomains' }))
-/*
-<DescribeDomainsResponse xmlns="http://cloudsearch.amazonaws.com/doc/2011-02-01">
-...
-*/
-
-request(aws4.sign({ service: 'ses', path: '/?Action=ListIdentities' }))
+request(aws4.sign({ service: 'ses', path: '/?Action=ListIdentities&Version=2010-12-01' }))
 /*
 <ListIdentitiesResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
 ...
@@ -160,6 +163,48 @@ request(aws4.sign({ service: 'elasticmapreduce', path: '/?Action=DescribeJobFlow
 ...
 */
 
+request(aws4.sign({ service: 'route53', path: '/2013-04-01/hostedzone' }))
+/*
+<ListHostedZonesResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
+...
+*/
+
+request(aws4.sign({ service: 'appstream', path: '/applications' }))
+/*
+{"_links":{"curie":[{"href":"http://docs.aws.amazon.com/appstream/latest/...
+...
+*/
+
+request(aws4.sign({ service: 'cognito-sync', path: '/identitypools' }))
+/*
+{"Count":0,"IdentityPoolUsages":[],"MaxResults":16,"NextToken":null}
+...
+*/
+
+request(aws4.sign({ service: 'elastictranscoder', path: '/2012-09-25/pipelines' }))
+/*
+{"NextPageToken":null,"Pipelines":[]}
+...
+*/
+
+request(aws4.sign({ service: 'lambda', path: '/2014-11-13/functions/' }))
+/*
+{"Functions":[],"NextMarker":null}
+...
+*/
+
+request(aws4.sign({ service: 'ecs', path: '/?Action=ListClusters&Version=2014-11-13' }))
+/*
+<ListClustersResponse xmlns="http://ecs.amazonaws.com/doc/2014-11-13/">
+...
+*/
+
+request(aws4.sign({ service: 'glacier', path: '/-/vaults', headers: { 'X-Amz-Glacier-Version': '2012-06-01' } }))
+/*
+{"Marker":null,"VaultList":[]}
+...
+*/
+
 request(aws4.sign({ service: 'storagegateway', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
   'X-Amz-Target': 'StorageGateway_20120630.ListGateways'
@@ -178,21 +223,12 @@ request(aws4.sign({ service: 'datapipeline', body: '{}', headers: {
 ...
 */
 
-request(aws4.sign({ service: 'directconnect', body: '{}', headers: {
-  'Content-Type': 'application/x-amz-json-1.1',
-  'X-Amz-Target': 'OvertureService.DescribeConnections'
-}}))
-/*
-{"connections":[]}
-...
-*/
-
 request(aws4.sign({ service: 'opsworks', body: '{}', headers: {
   'Content-Type': 'application/x-amz-json-1.1',
-  'X-Amz-Target': 'OpsWorks_20130218.DescribeInstances'
+  'X-Amz-Target': 'OpsWorks_20130218.DescribeStacks'
 }}))
 /*
-{"Instances":[]}
+{"Stacks":[]}
 ...
 */
 
@@ -223,6 +259,51 @@ request(aws4.sign({ service: 'cloudtrail', body: '{}', headers: {
 ...
 */
 
+request(aws4.sign({ service: 'logs', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'Logs_20140328.DescribeLogGroups'
+}}))
+/*
+{"logGroups":[]}
+...
+*/
+
+request(aws4.sign({ service: 'codedeploy', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'CodeDeploy_20141006.ListApplications'
+}}))
+/*
+{"applications":[]}
+...
+*/
+
+request(aws4.sign({ service: 'directconnect', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'OvertureService.DescribeConnections'
+}}))
+/*
+{"connections":[]}
+...
+*/
+
+request(aws4.sign({ service: 'kms', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'TrentService.ListKeys'
+}}))
+/*
+{"Keys":[],"Truncated":false}
+...
+*/
+
+request(aws4.sign({ service: 'config', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'StarlingDoveService.DescribeDeliveryChannels'
+}}))
+/*
+{"DeliveryChannels":[]}
+...
+*/
+
 request(aws4.sign({
   service: 'swf',
   body: '{"registrationStatus":"REGISTERED"}',
@@ -238,37 +319,40 @@ request(aws4.sign({
 
 request(aws4.sign({
   service: 'cognito-identity',
-  body: JSON.stringify({
-    Operation: 'com.amazonaws.cognito.identity.model#ListIdentityPools',
-    Service: 'com.amazonaws.cognito.identity.model#AWSCognitoIdentityService',
-    Input: {MaxResults: 1},
-  }),
+  body: '{"MaxResults": 1}',
   headers: {
-    'Content-Type': 'application/json',
-    'X-Amz-Target': 'com.amazonaws.cognito.identity.model.AWSCognitoIdentityService.ListIdentityPools'
+    'Content-Type': 'application/x-amz-json-1.1',
+    'X-Amz-Target': 'AWSCognitoIdentityService.ListIdentityPools'
   }
 }))
 /*
-{"Output":{"__type":"com.amazonaws.cognito.identity.model#ListIdentityPoolsResponse","IdentityPools":[],"NextToken":null},"Version":"1.0"}
+{"IdentityPools":[]}
 ...
 */
 
 request(aws4.sign({
   service: 'mobileanalytics',
   path: '/2014-06-05/events',
-  body: '{"events":[]}',
+  body: JSON.stringify({events:[{
+    eventType: 'a',
+    timestamp: new Date().toISOString(),
+    session: {},
+  }]}),
   headers: {
     'Content-Type': 'application/json',
+    'X-Amz-Client-Context': JSON.stringify({
+      client: {client_id: 'a', app_title: 'a'},
+      custom: {},
+      env: {platform: 'a'},
+      services: {},
+    }),
   }
 }))
 /*
-{"__type":"com.amazon.coral.validate#ValidationException","message":"1 validation error detected.
-...
+(HTTP 202, empty response)
 */
 
 // Still not updated to v4...
-
-//request(aws4.sign({ service: 'route53', path: '/2013-04-01/hostedzone' }))
 
 //request(aws4.sign({ service: 'importexport', path: '/?Action=ListJobs&Version=2010-06-01' }))
 
