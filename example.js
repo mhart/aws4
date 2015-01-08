@@ -304,6 +304,15 @@ request(aws4.sign({ service: 'config', body: '{}', headers: {
 ...
 */
 
+request(aws4.sign({ service: 'cloudhsm', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'CloudHsmFrontendService.ListAvailableZones'
+}}))
+/*
+{"AZList":["us-east-1a","us-east-1b","us-east-1c"]}
+...
+*/
+
 request(aws4.sign({
   service: 'swf',
   body: '{"registrationStatus":"REGISTERED"}',

@@ -45,6 +45,7 @@ This signature is supported by nearly all Amazon services, including
 [AppStream](http://docs.aws.amazon.com/appstream/latest/developerguide/appstream-api-rest.html),
 [Key Management Service](http://docs.aws.amazon.com/kms/latest/APIReference/),
 [Config](http://docs.aws.amazon.com/config/latest/APIReference/),
+[CloudHSM](http://docs.aws.amazon.com/cloudhsm/latest/dg/api-ref.html),
 [Route53](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rest.html) and
 [Route53 Domains](http://docs.aws.amazon.com/Route53/latest/APIReference/requests-rpc.html).
 
@@ -369,6 +370,15 @@ request(aws4.sign({ service: 'config', body: '{}', headers: {
 }}))
 /*
 {"DeliveryChannels":[]}
+...
+*/
+
+request(aws4.sign({ service: 'cloudhsm', body: '{}', headers: {
+  'Content-Type': 'application/x-amz-json-1.1',
+  'X-Amz-Target': 'CloudHsmFrontendService.ListAvailableZones'
+}}))
+/*
+{"AZList":["us-east-1a","us-east-1b","us-east-1c"]}
 ...
 */
 
