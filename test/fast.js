@@ -1,6 +1,7 @@
 require('should')
-var aws4   = require('../'),
-    cred   = { accessKeyId: 'ABCDEF', secretAccessKey: 'abcdef1234567890' },
+var fs     = require('fs'),
+    aws4   = require('../'),
+    cred   = {accessKeyId: 'ABCDEF', secretAccessKey: 'abcdef1234567890'},
     date   = 'Wed, 26 Dec 2012 06:10:30 GMT',
     iso    = '20121226T061030Z',
     auth   = 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, ' +
@@ -125,5 +126,60 @@ describe('aws4', function() {
     })
   })
 
+  describe('with AWS test suite', function() {
+    var CREDENTIALS = {
+      accessKeyId: 'AKIDEXAMPLE',
+      secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
+    }
+    var SERVICE = 'host'
+
+    var tests = fs.readdirSync(__dirname + '/fixtures')
+      .map(function(name) { return (name.match(/^(.+)\.authz/) || [])[1] })
+      .filter(Boolean)
+
+    tests.forEach(function(test) {
+
+      it('should pass ' + test, function() {
+        var request = fs.readFileSync(__dirname + '/fixtures/' + test + '.req', 'utf8').replace(/\r/g, '')
+        var canonicalString = fs.readFileSync(__dirname + '/fixtures/' + test + '.creq', 'utf8').replace(/\r/g, '')
+        var stringToSign = fs.readFileSync(__dirname + '/fixtures/' + test + '.sts', 'utf8').replace(/\r/g, '')
+        var outputAuth = fs.readFileSync(__dirname + '/fixtures/' + test + '.authz', 'utf8').replace(/\r/g, '')
+
+        var reqLines = request.split('\n')
+        var req = reqLines[0].split(' ')
+        var method = req[0]
+        var path = req[1]
+        var headers = {}
+        for (var i = 1; i < reqLines.length; i++) {
+          if (!reqLines[i]) break
+          var colonIx = reqLines[i].indexOf(':')
+          var header = reqLines[i].slice(0, colonIx).toLowerCase()
+          var value = reqLines[i].slice(colonIx + 1)
+          if (headers[header]) {
+            headers[header] = headers[header].split(',')
+            headers[header].push(value)
+            headers[header] = headers[header].sort().join(',')
+          } else {
+            headers[header] = value
+          }
+        }
+        var body = reqLines.slice(i + 1).join('\n')
+
+        var signer = new (aws4.RequestSigner)({
+          service: SERVICE,
+          method: method,
+          path: path,
+          headers: headers,
+          body: body,
+          doNotModifyHeaders: true,
+        }, CREDENTIALS)
+
+        signer.canonicalString().should.equal(canonicalString)
+        signer.stringToSign().should.equal(stringToSign)
+        signer.sign().headers.Authorization.should.equal(outputAuth)
+      })
+
+    })
+  })
 })
 

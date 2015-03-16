@@ -1,5 +1,7 @@
 var aws4 = exports,
     url = require('url'),
+    path = require('path'),
+    querystring = require('querystring'),
     crypto = require('crypto'),
     lru = require('lru-cache'),
     credentialsCache = lru(1000)
@@ -55,11 +57,7 @@ RequestSigner.prototype.createHost = function() {
 
 RequestSigner.prototype.sign = function() {
   var request = this.request,
-      headers = request.headers = (request.headers || {}),
-      date = new Date(headers.Date || new Date)
-
-  this.datetime = date.toISOString().replace(/[:\-]|\.\d{3}/g, '')
-  this.date = this.datetime.substr(0, 8)
+      headers = request.headers = (request.headers || {})
 
   if (!request.method && request.body)
     request.method = 'POST'
@@ -69,24 +67,41 @@ RequestSigner.prototype.sign = function() {
   if (!request.hostname && !request.host)
     request.hostname = headers.Host || headers.host
 
-  if (request.body && !headers['Content-Type'] && !headers['content-type'])
-    headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
+  if (!request.doNotModifyHeaders) {
+    if (request.body && !headers['Content-Type'] && !headers['content-type'])
+      headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
 
-  if (request.body && !headers['Content-Length'] && !headers['content-length'])
-    headers['Content-Length'] = Buffer.byteLength(request.body)
+    if (request.body && !headers['Content-Length'] && !headers['content-length'])
+      headers['Content-Length'] = Buffer.byteLength(request.body)
 
-  headers['X-Amz-Date'] = this.datetime
+    headers['X-Amz-Date'] = this.getDateTime()
 
-  if (this.credentials.sessionToken)
-    headers['X-Amz-Security-Token'] = this.credentials.sessionToken
+    if (this.credentials.sessionToken)
+      headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
-  if (this.service === 's3')
-    headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
+    if (this.service === 's3')
+      headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
+  }
 
-  if (headers.Authorization) delete headers.Authorization
+  delete headers.Authorization
+  delete headers.authorization
   headers.Authorization = this.authHeader()
 
   return request
+}
+
+RequestSigner.prototype.getDateTime = function() {
+  if (!this.datetime) {
+    var headers = (this.request.headers || {}),
+      date = new Date(headers.Date || headers.date || new Date)
+
+    this.datetime = date.toISOString().replace(/[:\-]|\.\d{3}/g, '')
+  }
+  return this.datetime
+}
+
+RequestSigner.prototype.getDate = function() {
+  return this.getDateTime().substr(0, 8)
 }
 
 RequestSigner.prototype.authHeader = function() {
@@ -98,10 +113,11 @@ RequestSigner.prototype.authHeader = function() {
 }
 
 RequestSigner.prototype.signature = function() {
-  var cacheKey = [this.credentials.secretAccessKey, this.date, this.region, this.service].join(),
+  var date = this.getDate(),
+      cacheKey = [this.credentials.secretAccessKey, date, this.region, this.service].join(),
       kDate, kRegion, kService, kCredentials = credentialsCache.get(cacheKey)
   if (!kCredentials) {
-    kDate = hmac('AWS4' + this.credentials.secretAccessKey, this.date)
+    kDate = hmac('AWS4' + this.credentials.secretAccessKey, date)
     kRegion = hmac(kDate, this.region)
     kService = hmac(kRegion, this.service)
     kCredentials = hmac(kService, 'aws4_request')
@@ -113,18 +129,26 @@ RequestSigner.prototype.signature = function() {
 RequestSigner.prototype.stringToSign = function() {
   return [
     'AWS4-HMAC-SHA256',
-    this.datetime,
+    this.getDateTime(),
     this.credentialString(),
     hash(this.canonicalString(), 'hex')
   ].join('\n')
 }
 
 RequestSigner.prototype.canonicalString = function() {
-  var pathParts = (this.request.path || '/').split('?', 2)
+  var pathStr = this.request.path || '/', queryIx = pathStr.indexOf('?'), queryStr = ''
+  if (queryIx >= 0) {
+    var query = querystring.parse(pathStr.slice(queryIx + 1))
+    pathStr = pathStr.slice(0, queryIx)
+    queryStr = querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
+      obj[key] = Array.isArray(query[key]) ? query[key].sort() : query[key]
+      return obj
+    }, {}))
+  }
   return [
     this.request.method || 'GET',
-    pathParts[0] || '/',
-    pathParts[1] || '',
+    path.normalize(pathStr),
+    queryStr,
     this.canonicalHeaders() + '\n',
     this.signedHeaders(),
     hash(this.request.body || '', 'hex')
@@ -151,7 +175,7 @@ RequestSigner.prototype.signedHeaders = function() {
 
 RequestSigner.prototype.credentialString = function() {
   return [
-    this.date,
+    this.getDate(),
     this.region,
     this.service,
     'aws4_request'
