@@ -22,8 +22,8 @@ function RequestSigner(request, credentials) {
 
   if (typeof request === 'string') request = url.parse(request)
 
-  var headers = request.headers || {},
-      hostParts = this.matchHost(request.hostname || request.host || headers.Host)
+  var headers = request.headers = (request.headers || {}),
+      hostParts = this.matchHost(request.hostname || request.host || headers.Host || headers.host)
 
   this.request = request
   this.credentials = credentials || this.defaultCredentials()
@@ -33,6 +33,14 @@ function RequestSigner(request, credentials) {
 
   // SES uses a different domain from the service name
   if (this.service === 'email') this.service = 'ses'
+
+  if (!request.method && request.body)
+    request.method = 'POST'
+
+  if (!headers.Host && !headers.host)
+    headers.Host = request.hostname || request.host || this.createHost()
+  if (!request.hostname && !request.host)
+    request.hostname = headers.Host || headers.host
 }
 
 RequestSigner.prototype.matchHost = function(host) {
@@ -56,43 +64,64 @@ RequestSigner.prototype.createHost = function() {
 }
 
 RequestSigner.prototype.sign = function() {
-  var request = this.request,
-      headers = request.headers = (request.headers || {})
+  var request = this.request, headers = request.headers, parsedUrl, query
 
-  if (!request.method && request.body)
-    request.method = 'POST'
-
-  if (!headers.Host && !headers.host)
-    headers.Host = request.hostname || request.host || this.createHost()
-  if (!request.hostname && !request.host)
-    request.hostname = headers.Host || headers.host
-
-  if (!request.doNotModifyHeaders) {
-    if (request.body && !headers['Content-Type'] && !headers['content-type'])
-      headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
-
-    if (request.body && !headers['Content-Length'] && !headers['content-length'])
-      headers['Content-Length'] = Buffer.byteLength(request.body)
-
-    headers['X-Amz-Date'] = this.getDateTime()
+  if (request.signQuery) {
+    parsedUrl = url.parse(request.path || '/', true)
+    query = parsedUrl.query
 
     if (this.credentials.sessionToken)
-      headers['X-Amz-Security-Token'] = this.credentials.sessionToken
+      query['X-Amz-Security-Token'] = this.credentials.sessionToken
 
-    if (this.service === 's3')
-      headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
+    if (this.service === 's3' && !query['X-Amz-Expires'])
+      query['X-Amz-Expires'] = 86400
+
+    if (query['X-Amz-Date'])
+      this.datetime = query['X-Amz-Date']
+    else
+      query['X-Amz-Date'] = this.getDateTime()
+
+    query['X-Amz-Algorithm'] = 'AWS4-HMAC-SHA256'
+    query['X-Amz-Credential'] = this.credentials.accessKeyId + '/' + this.credentialString()
+    query['X-Amz-SignedHeaders'] = this.signedHeaders()
+
+    delete parsedUrl.search
+    request.path = url.format(parsedUrl)
+
+    request.path += '&X-Amz-Signature=' + this.signature()
+
+  } else {
+
+    if (!request.doNotModifyHeaders) {
+      if (request.body && !headers['Content-Type'] && !headers['content-type'])
+        headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
+
+      if (request.body && !headers['Content-Length'] && !headers['content-length'])
+        headers['Content-Length'] = Buffer.byteLength(request.body)
+
+      if (this.credentials.sessionToken)
+        headers['X-Amz-Security-Token'] = this.credentials.sessionToken
+
+      if (this.service === 's3')
+        headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
+
+      if (headers['X-Amz-Date'])
+        this.datetime = headers['X-Amz-Date']
+      else
+        headers['X-Amz-Date'] = this.getDateTime()
+    }
+
+    delete headers.Authorization
+    delete headers.authorization
+    headers.Authorization = this.authHeader()
   }
-
-  delete headers.Authorization
-  delete headers.authorization
-  headers.Authorization = this.authHeader()
 
   return request
 }
 
 RequestSigner.prototype.getDateTime = function() {
   if (!this.datetime) {
-    var headers = (this.request.headers || {}),
+    var headers = this.request.headers,
       date = new Date(headers.Date || headers.date || new Date)
 
     this.datetime = date.toISOString().replace(/[:\-]|\.\d{3}/g, '')
@@ -136,7 +165,11 @@ RequestSigner.prototype.stringToSign = function() {
 }
 
 RequestSigner.prototype.canonicalString = function() {
-  var pathStr = this.request.path || '/', queryIx = pathStr.indexOf('?'), queryStr = ''
+  var pathStr = this.request.path || '/',
+      queryIx = pathStr.indexOf('?'),
+      queryStr = '',
+      bodyHash = this.service === 's3' && this.request.signQuery ?
+        'UNSIGNED-PAYLOAD' : hash(this.request.body || '', 'hex')
   if (queryIx >= 0) {
     var query = querystring.parse(pathStr.slice(queryIx + 1))
     pathStr = pathStr.slice(0, queryIx)
@@ -151,7 +184,7 @@ RequestSigner.prototype.canonicalString = function() {
     queryStr,
     this.canonicalHeaders() + '\n',
     this.signedHeaders(),
-    hash(this.request.body || '', 'hex')
+    bodyHash,
   ].join('\n')
 }
 
