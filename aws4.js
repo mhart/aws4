@@ -1,6 +1,5 @@
 var aws4 = exports,
     url = require('url'),
-    path = require('path'),
     querystring = require('querystring'),
     crypto = require('crypto'),
     lru = require('lru-cache'),
@@ -180,7 +179,7 @@ RequestSigner.prototype.canonicalString = function() {
   }
   return [
     this.request.method || 'GET',
-    path.normalize(pathStr),
+    url.resolve('/', pathStr.replace(/\/{2,}/g, '/')) || '/',
     queryStr,
     this.canonicalHeaders() + '\n',
     this.signedHeaders(),
