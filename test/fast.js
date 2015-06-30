@@ -62,6 +62,16 @@ describe('aws4', function() {
       opts.hostname.should.equal('iam.amazonaws.com')
       opts.headers.Host.should.equal('iam.amazonaws.com')
     })
+    it('should add hostname and no region if s3 and us-east-1', function() {
+      var opts = aws4.sign({service: 's3'})
+      opts.hostname.should.equal('s3.amazonaws.com')
+      opts.headers.Host.should.equal('s3.amazonaws.com')
+    })
+    it('should add hostname and no region if sdb and us-east-1', function() {
+      var opts = aws4.sign({service: 'sdb'})
+      opts.hostname.should.equal('sdb.amazonaws.com')
+      opts.headers.Host.should.equal('sdb.amazonaws.com')
+    })
     it('should populate AWS headers correctly', function() {
       var opts = aws4.sign({service: 'sqs', headers: {Date: date}})
       opts.headers['X-Amz-Date'].should.equal(iso)
@@ -70,10 +80,20 @@ describe('aws4', function() {
   })
 
   describe('#sign() with no host, but with region', function() {
-    it('should add correct hostname', function() {
+    it('should add correct hostname for regular services', function() {
       var opts = aws4.sign({service: 'glacier', region: 'us-west-1'})
       opts.hostname.should.equal('glacier.us-west-1.amazonaws.com')
       opts.headers.Host.should.equal('glacier.us-west-1.amazonaws.com')
+    })
+    it('should add correct hostname for s3', function() {
+      var opts = aws4.sign({service: 's3', region: 'us-west-1'})
+      opts.hostname.should.equal('s3-us-west-1.amazonaws.com')
+      opts.headers.Host.should.equal('s3-us-west-1.amazonaws.com')
+    })
+    it('should add correct hostname for ses', function() {
+      var opts = aws4.sign({service: 'ses', region: 'us-west-1'})
+      opts.hostname.should.equal('email.us-west-1.amazonaws.com')
+      opts.headers.Host.should.equal('email.us-west-1.amazonaws.com')
     })
   })
 

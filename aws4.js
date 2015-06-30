@@ -57,7 +57,8 @@ RequestSigner.prototype.isSingleRegion = function() {
 }
 
 RequestSigner.prototype.createHost = function() {
-  var region = this.isSingleRegion() ? '' : '.' + this.region,
+  var region = this.isSingleRegion() ? '' :
+        (this.service === 's3' && this.region !== 'us-east-1' ? '-' : '.') + this.region,
       service = this.service === 'ses' ? 'email' : this.service
   return service + region + '.amazonaws.com'
 }
