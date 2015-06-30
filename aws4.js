@@ -15,6 +15,18 @@ function hash(string, encoding) {
   return crypto.createHash('sha256').update(string, 'utf8').digest(encoding)
 }
 
+this.uriEscape = function(str) {
+  // RFC-3986 fix
+  if (str) {
+    str = str.replace(/!/g, '%21');
+    str = str.replace(/\*/g, '%2A');
+    str = str.replace(/\(/g, '%28');
+    str = str.replace(/\)/g, '%29');
+    str = str.replace(/'/g, '%27');
+  }
+  return str;
+}
+
 // request: { path | body, [host], [method], [headers], [service], [region] }
 // credentials: { accessKeyId, secretAccessKey, [sessionToken] }
 function RequestSigner(request, credentials) {
@@ -176,6 +188,7 @@ RequestSigner.prototype.canonicalString = function() {
       obj[key] = Array.isArray(query[key]) ? query[key].sort() : query[key]
       return obj
     }, {}))
+    queryStr = uriEscape(queryStr)
   }
   return [
     this.request.method || 'GET',
