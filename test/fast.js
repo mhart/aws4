@@ -157,6 +157,46 @@ describe('aws4', function() {
     })
   })
 
+  describe('#uriEscape()', function() {
+    var uriEscape = function (str) {
+      // querystring.stringify/encodeURIComponent is not enough
+      // for proper escaping of query string values
+      // hence we need to apply this
+      str = encodeURIComponent(str)
+      if (str) {
+        str = str.replace(/!/g, '%21');
+        str = str.replace(/\*/g, '%2A');
+        str = str.replace(/\(/g, '%28');
+        str = str.replace(/\)/g, '%29');
+        str = str.replace(/'/g, '%27');
+      }
+      return str;
+    };
+
+    // copied from AWS SDK for Node.js
+    it('escapes spaces as %20', function() {
+      return uriEscape('a b').should.equal('a%20b')
+    });
+    it('escapes + as %2B', function() {
+      return uriEscape('a+b').should.equal('a%2Bb')
+    });
+    it('escapes / as %2F', function() {
+      return uriEscape('a/b').should.equal('a%2Fb')
+    });
+    it('escapes \' as %27', function() {
+      return uriEscape('a\'b').should.equal('a%27b')
+    });
+    it('escapes * as %2A', function() {
+      return uriEscape('a*b').should.equal('a%2Ab')
+    });
+    it('does not escape ~', function() {
+      return uriEscape('a~b').should.equal('a~b')
+    });
+    return it('encodes utf8 characters', function() {
+      return uriEscape('ёŝ').should.equal('%D1%91%C5%9D')
+    });
+  });
+
   describe('with AWS test suite', function() {
     var CREDENTIALS = {
       accessKeyId: 'AKIDEXAMPLE',
