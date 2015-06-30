@@ -155,6 +155,17 @@ describe('aws4', function() {
         'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&' +
         'X-Amz-Signature=1acb058aaf5ce6ea6125f03231ab2b64acc9ce05fd70e4c7f087515adc41814a')
     })
+    it('should adhere to RFC-3986', function() {
+      var opts = aws4.sign({
+        service: 's3',
+        path: '/some-bucket?a=!\'&b=()*&X-Amz-Date=' + iso,
+        signQuery: true,
+      })
+      opts.path.should.equal(
+        '/some-bucket?a=!\'&b=()*&X-Amz-Date=20121226T061030Z&X-Amz-Expires=86400&X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
+        'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host' +
+        '&X-Amz-Signature=ef59e99e55385867ff1a8730120340ccf269b9a6754b111b4a7801fffebdc216')
+    })
   })
 
   describe('with AWS test suite', function() {
