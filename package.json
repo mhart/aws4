@@ -62,11 +62,11 @@
   },
   "license": "MIT",
   "dependencies": {
-    "lru-cache": "^2.5.0"
+    "lru-cache": "^2.6.5"
   },
   "devDependencies": {
-    "mocha": "^2.2.1",
-    "should": "^5.2.0"
+    "mocha": "^2.2.5",
+    "should": "^7.0.1"
   },
   "scripts": {
     "test": "mocha ./test/fast.js ./test/slow.js -b -t 100s -R list"
