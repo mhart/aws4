@@ -176,7 +176,7 @@ RequestSigner.prototype.canonicalString = function() {
     queryStr = querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
       obj[key] = Array.isArray(query[key]) ? query[key].sort() : query[key]
       return obj
-    }, {})).replace(/[!'()*]/g, function(c) { return '%' + c.charCodeAt(0).toString(16) })
+    }, {})).replace(/[!'()*]/g, function(c) { return '%' + c.charCodeAt(0).toString(16).toUpperCase() })
   }
   return [
     this.request.method || 'GET',
