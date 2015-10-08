@@ -44,7 +44,11 @@ function RequestSigner(request, credentials) {
 
 RequestSigner.prototype.matchHost = function(host) {
   var match = (host || '').match(/^(?:[^\.]+\.)?([^\.]+)\.?([^\.]*)\.amazonaws\.com$/)
-  return (match || []).slice(1, 3)
+  match = (match || []).slice(1, 3)
+  if (match[1] === 'es') {
+    return match.reverse();
+  }
+  return match;
 }
 
 // http://docs.aws.amazon.com/general/latest/gr/rande.html
