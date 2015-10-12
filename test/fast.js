@@ -31,6 +31,44 @@ describe('aws4', function() {
       signer.request.headers.Date = date
       signer.sign().headers.Authorization.should.equal(auth)
     })
+
+    it('should also support elastic search', function() {
+      var signer = new aws4.RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
+      signer.request.headers.Date = date
+      signer.sign().headers.Authorization.should.equal('AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/eu-west-1/es/aws4_request, SignedHeaders=date;host;x-amz-date, Signature=2dba21885bd7ccb0c5775c578c18a5c81fd30db84d4a2911933152df01de5260')
+    })
+  })
+
+  describe('RequestSigner', function() {
+    it('should correctly recognise ses', function() {
+      var signer = new aws4.RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.service.should.equal('ses')
+      signer.region.should.equal('us-west-2')
+    })
+
+    it('should correctly recognise es when interacting directly with the es api', function() {
+      var signer = new aws4.RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
+      signer.service.should.equal('es')
+      signer.region.should.equal('eu-west-1')
+    })
+
+    it('should correctly recognise es when interacting directly with aws\'s es configuration api', function() {
+      var signer = new aws4.RequestSigner('https://es.us-west-2.amazonaws.com')
+      signer.service.should.equal('es')
+      signer.region.should.equal('us-west-2')
+    })
+
+    it('should correctly recognise sns', function() {
+      var signer = new aws4.RequestSigner('https://sns.us-west-2.amazonaws.com')
+      signer.service.should.equal('sns')
+      signer.region.should.equal('us-west-2')
+    })
+
+    it('should know global endpoint is us-east-1 for sdb', function() {
+      var signer = new aws4.RequestSigner('https://sdb.amazonaws.com')
+      signer.service.should.equal('sdb')
+      signer.region.should.equal('us-east-1')
+    })
   })
 
   describe('#sign() with no credentials', function() {
