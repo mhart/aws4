@@ -46,10 +46,16 @@ describe('aws4', function() {
       signer.region.should.equal('us-west-2')
     })
 
-    it('should correctly recognise es', function() {
+    it('should correctly recognise es when interacting directly with the es api', function() {
       var signer = new aws4.RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
       signer.service.should.equal('es')
       signer.region.should.equal('eu-west-1')
+    })
+
+    it('should correctly recognise es when interacting directly with aws\'s es configuration api', function() {
+      var signer = new aws4.RequestSigner('https://es.us-west-2.amazonaws.com')
+      signer.service.should.equal('es')
+      signer.region.should.equal('us-west-2')
     })
 
     it('should correctly recognise sns', function() {

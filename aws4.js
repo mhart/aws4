@@ -27,8 +27,9 @@ function RequestSigner(request, credentials) {
   this.request = request
   this.credentials = credentials || this.defaultCredentials()
 
-  // ES's hostParts are the other way round
-  // E.g. search-cluster-name-aaaa00aaaa0aaa0aaaaaaa0aaa.us-east-1.es.amazonaws.com
+  // ES's hostParts are sometimes the other way round, if the value that is expected
+  // to be region equals ‘es’ switch them back
+  // e.g. search-cluster-name-aaaa00aaaa0aaa0aaaaaaa0aaa.us-east-1.es.amazonaws.com
   if (hostParts[1] === 'es')
     hostParts = hostParts.reverse()
 
