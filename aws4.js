@@ -27,12 +27,6 @@ function RequestSigner(request, credentials) {
   this.request = request
   this.credentials = credentials || this.defaultCredentials()
 
-  // ES's hostParts are sometimes the other way round, if the value that is expected
-  // to be region equals ‘es’ switch them back
-  // e.g. search-cluster-name-aaaa00aaaa0aaa0aaaaaaa0aaa.us-east-1.es.amazonaws.com
-  if (hostParts[1] === 'es')
-    hostParts = hostParts.reverse()
-
   this.service = request.service || hostParts[0] || ''
   this.region = request.region || hostParts[1] || 'us-east-1'
 
@@ -50,7 +44,15 @@ function RequestSigner(request, credentials) {
 
 RequestSigner.prototype.matchHost = function(host) {
   var match = (host || '').match(/([^\.]+)\.(?:([^\.]*)\.)?amazonaws\.com$/)
-  return (match || []).slice(1, 3)
+  var hostParts = (match || []).slice(1, 3)
+
+  // ES's hostParts are sometimes the other way round, if the value that is expected
+  // to be region equals ‘es’ switch them back
+  // e.g. search-cluster-name-aaaa00aaaa0aaa0aaaaaaa0aaa.us-east-1.es.amazonaws.com
+  if (hostParts[1] === 'es')
+    hostParts = hostParts.reverse()
+
+  return hostParts
 }
 
 // http://docs.aws.amazon.com/general/latest/gr/rande.html
@@ -143,7 +145,7 @@ RequestSigner.prototype.authHeader = function() {
   return [
     'AWS4-HMAC-SHA256 Credential=' + this.credentials.accessKeyId + '/' + this.credentialString(),
     'SignedHeaders=' + this.signedHeaders(),
-    'Signature=' + this.signature()
+    'Signature=' + this.signature(),
   ].join(', ')
 }
 
@@ -166,7 +168,7 @@ RequestSigner.prototype.stringToSign = function() {
     'AWS4-HMAC-SHA256',
     this.getDateTime(),
     this.credentialString(),
-    hash(this.canonicalString(), 'hex')
+    hash(this.canonicalString(), 'hex'),
   ].join('\n')
 }
 
@@ -217,16 +219,16 @@ RequestSigner.prototype.credentialString = function() {
     this.getDate(),
     this.region,
     this.service,
-    'aws4_request'
+    'aws4_request',
   ].join('/')
 }
 
 RequestSigner.prototype.defaultCredentials = function() {
   var env = process.env
   return {
-    accessKeyId:     env.AWS_ACCESS_KEY_ID     || env.AWS_ACCESS_KEY,
+    accessKeyId: env.AWS_ACCESS_KEY_ID || env.AWS_ACCESS_KEY,
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY || env.AWS_SECRET_KEY,
-    sessionToken:    env.AWS_SESSION_TOKEN
+    sessionToken: env.AWS_SESSION_TOKEN,
   }
 }
 
