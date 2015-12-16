@@ -188,7 +188,7 @@ RequestSigner.prototype.canonicalString = function() {
   }
   return [
     this.request.method || 'GET',
-    url.resolve('/', pathStr.replace(/\/{2,}/g, '/')) || '/',
+    url.resolve('/', pathStr.replace(/\/{2,}/g, '/')).replace(/\*/g, '%2A') || '/',
     queryStr,
     this.canonicalHeaders() + '\n',
     this.signedHeaders(),
