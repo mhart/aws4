@@ -186,9 +186,11 @@ RequestSigner.prototype.canonicalString = function() {
       return obj
     }, {})).replace(/[!'()*]/g, function(c) { return '%' + c.charCodeAt(0).toString(16).toUpperCase() })
   }
+  // AWS request * to be encoded, it migth be more chars that also request to be encoded.
+  var uri = (url.resolve('/', pathStr.replace(/\/{2,}/g, '/')) || '/').replace(/\*/g, '%2A');
   return [
     this.request.method || 'GET',
-    url.resolve('/', pathStr.replace(/\/{2,}/g, '/')) || '/',
+    uri,
     queryStr,
     this.canonicalHeaders() + '\n',
     this.signedHeaders(),
