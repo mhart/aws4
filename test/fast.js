@@ -1,12 +1,13 @@
 require('should')
-var fs     = require('fs'),
-    aws4   = require('../'),
-    cred   = {accessKeyId: 'ABCDEF', secretAccessKey: 'abcdef1234567890'},
-    date   = 'Wed, 26 Dec 2012 06:10:30 GMT',
-    iso    = '20121226T061030Z',
-    auth   = 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, ' +
-             'SignedHeaders=date;host;x-amz-date, ' +
-             'Signature=d847efb54cd60f0a256174848f26e43af4b5168dbec3118dc9fd84e942285791'
+var fs = require('fs'),
+    aws4 = require('../'),
+    RequestSigner = aws4.RequestSigner,
+    cred = {accessKeyId: 'ABCDEF', secretAccessKey: 'abcdef1234567890'},
+    date = 'Wed, 26 Dec 2012 06:10:30 GMT',
+    iso = '20121226T061030Z',
+    auth = 'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/sqs/aws4_request, ' +
+           'SignedHeaders=date;host;x-amz-date, ' +
+           'Signature=d847efb54cd60f0a256174848f26e43af4b5168dbec3118dc9fd84e942285791'
 
 describe('aws4', function() {
 
@@ -27,13 +28,13 @@ describe('aws4', function() {
 
   describe('#sign() when constructed with string url', function() {
     it('should parse into request correctly', function() {
-      var signer = new aws4.RequestSigner('http://sqs.us-east-1.amazonaws.com/')
+      var signer = new RequestSigner('http://sqs.us-east-1.amazonaws.com/')
       signer.request.headers.Date = date
       signer.sign().headers.Authorization.should.equal(auth)
     })
 
     it('should also support elastic search', function() {
-      var signer = new aws4.RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
+      var signer = new RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
       signer.request.headers.Date = date
       signer.sign().headers.Authorization.should.equal('AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/eu-west-1/es/aws4_request, SignedHeaders=date;host;x-amz-date, Signature=2dba21885bd7ccb0c5775c578c18a5c81fd30db84d4a2911933152df01de5260')
     })
@@ -41,31 +42,31 @@ describe('aws4', function() {
 
   describe('RequestSigner', function() {
     it('should correctly recognise ses', function() {
-      var signer = new aws4.RequestSigner('https://email.us-west-2.amazonaws.com')
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
       signer.service.should.equal('ses')
       signer.region.should.equal('us-west-2')
     })
 
     it('should correctly recognise es when interacting directly with the es api', function() {
-      var signer = new aws4.RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
+      var signer = new RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
       signer.service.should.equal('es')
       signer.region.should.equal('eu-west-1')
     })
 
     it('should correctly recognise es when interacting directly with aws\'s es configuration api', function() {
-      var signer = new aws4.RequestSigner('https://es.us-west-2.amazonaws.com')
+      var signer = new RequestSigner('https://es.us-west-2.amazonaws.com')
       signer.service.should.equal('es')
       signer.region.should.equal('us-west-2')
     })
 
     it('should correctly recognise sns', function() {
-      var signer = new aws4.RequestSigner('https://sns.us-west-2.amazonaws.com')
+      var signer = new RequestSigner('https://sns.us-west-2.amazonaws.com')
       signer.service.should.equal('sns')
       signer.region.should.equal('us-west-2')
     })
 
     it('should know global endpoint is us-east-1 for sdb', function() {
-      var signer = new aws4.RequestSigner('https://sdb.amazonaws.com')
+      var signer = new RequestSigner('https://sdb.amazonaws.com')
       signer.service.should.equal('sdb')
       signer.region.should.equal('us-east-1')
     })
@@ -173,8 +174,8 @@ describe('aws4', function() {
         headers: {
           Date: date,
           'Content-Type': 'application/x-amz-json-1.0',
-          'X-Amz-Target': 'DynamoDB_20111205.ListTables'
-        }
+          'X-Amz-Target': 'DynamoDB_20111205.ListTables',
+        },
       })
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(
@@ -220,16 +221,282 @@ describe('aws4', function() {
         signQuery: true,
       })
       opts.path.should.equal(
-        '/some-bucket?a=!\'&b=()*&X-Amz-Date=20121226T061030Z&X-Amz-Expires=86400&X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
+        '/some-bucket?a=%21%27&b=%28%29%2A&X-Amz-Date=20121226T061030Z&X-Amz-Expires=86400&X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
         'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&' +
         'X-Amz-Signature=5f3e8e3406e27471183900f8ee891a6ae40e959c05394b4271a2b5b543d5a14a')
     })
   })
 
+  describe('#canonicalString()', function() {
+    it('should work with chars > 127 and < 255 with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/ü'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%C3%BC')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%C3%BC')
+    })
+
+    it('should work with chars > 127 and < 255 with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/ü'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%25C3%25BC')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%C3%BC')
+    })
+
+    it('should work with chars > 255 with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/€'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%E2%82%AC')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%E2%82%AC')
+    })
+
+    it('should work with chars > 255 with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/€'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%25E2%2582%25AC')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%E2%82%AC')
+    })
+
+    it('should work with chars > 255 with s3 and signQuery', function() {
+      var signer = new RequestSigner({service: 's3', path: '/€', signQuery: true})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%E2%82%AC')
+      canonical[2].should.match(new RegExp('^X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
+        'X-Amz-Credential=ABCDEF%2F\\d{8}%2Fus-east-1%2Fs3%2Faws4_request&' +
+        'X-Amz-Date=\\d{8}T\\d{6}Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host$'))
+    })
+
+    it('should work with chars > 255 with non-s3 and signQuery', function() {
+      var signer = new RequestSigner({service: 'es', path: '/€', signQuery: true})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%25E2%2582%25AC')
+      canonical[2].should.match(new RegExp('^X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
+        'X-Amz-Credential=ABCDEF%2F\\d{8}%2Fus-east-1%2Fes%2Faws4_request&' +
+        'X-Amz-Date=\\d{8}T\\d{6}Z&X-Amz-SignedHeaders=host$'))
+    })
+
+    it('should work with reserved chars with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/%41'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/A')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%41')
+    })
+
+    it('should work with reserved chars with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/%41'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%2541')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%41')
+    })
+
+    it('should work with RFC-3986 chars with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/!\'()*%21%27%28%29%2A'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%21%27%28%29%2A%21%27%28%29%2A')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/!\'()*%21%27%28%29%2A')
+    })
+
+    it('should work with RFC-3986 chars with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/!\'()*%21%27%28%29%2A'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%21%27%28%29%2A%2521%2527%2528%2529%252A')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/!\'()*%21%27%28%29%2A')
+    })
+
+    it('should normalize casing on percent encoding with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/%2a'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%2A')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%2a')
+    })
+
+    it('should just escape percent encoding on non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/%2a'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%252a')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%2a')
+    })
+
+    it('should decode %2F with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/%2f%2f'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('///')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%2f%2f')
+    })
+
+    it('should just escape %2F on non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/%2f%2f'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%252f%252f')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%2f%2f')
+    })
+
+    it('should work with mixed chars > 127 and < 255 and percent encoding with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/ü%41'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%C3%BCA')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%C3%BCA')
+    })
+
+    it('should work with mixed chars > 127 and < 255 percent encoding with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/ü%41'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%25C3%25BCA')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%C3%BCA')
+    })
+
+    it('should work with mixed chars > 127 and < 255 and percent encoding and query params with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/ü%41?a=%41ü'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%C3%BCA')
+      canonical[2].should.equal('a=A%C3%BC')
+      signer.sign().path.should.equal('/%C3%BCA?a=A%C3%BC')
+    })
+
+    it('should work with mixed chars > 127 and < 255 percent encoding and query params with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/ü%41?a=%41ü'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%25C3%25BCA')
+      canonical[2].should.equal('a=A%C3%BC')
+      signer.sign().path.should.equal('/%C3%BCA?a=A%C3%BC')
+    })
+
+    it('should work with mixed chars > 255 and percent encoding and query params with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/€ü%41?€ü=%41€ü'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%E2%82%AC%C3%BCA')
+      canonical[2].should.equal('%E2%82%AC%C3%BC=A%E2%82%AC%C3%BC')
+      signer.sign().path.should.equal('/%E2%82%AC%C3%BCA?%E2%82%AC%C3%BC=A%E2%82%AC%C3%BC')
+    })
+
+    it('should work with mixed chars > 255 percent encoding and query params with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/€ü%41?€ü=%41€ü'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%25E2%2582%25AC%25C3%25BCA')
+      canonical[2].should.equal('%E2%82%AC%C3%BC=A%E2%82%AC%C3%BC')
+      signer.sign().path.should.equal('/%E2%82%AC%C3%BCA?%E2%82%AC%C3%BC=A%E2%82%AC%C3%BC')
+    })
+
+    it('should work with %2F in query params with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/%2f?a=/&/=%2f'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('//')
+      canonical[2].should.equal('%2F=%2F&a=%2F')
+      signer.sign().path.should.equal('/%2f?a=%2F&%2F=%2F')
+    })
+
+    it('should work with %2F in query params with non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/%2f?a=/&/=%2f'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%252f')
+      canonical[2].should.equal('%2F=%2F&a=%2F')
+      signer.sign().path.should.equal('/%2f?a=%2F&%2F=%2F')
+    })
+
+    it('should work with query param order in s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/?a=b&a=B&a=b&a=c'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/')
+      canonical[2].should.equal('a=b')
+      signer.sign().path.should.equal('/?a=b&a=B&a=b&a=c')
+    })
+
+    it('should work with query param order in non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/?a=b&a=B&a=b&a=c'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/')
+      canonical[2].should.equal('a=B&a=b&a=b&a=c')
+      signer.sign().path.should.equal('/?a=b&a=B&a=b&a=c')
+    })
+
+    it('should not normalize path in s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '//a/b/..//c/.?a=b'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('//a/b/..//c/.')
+      canonical[2].should.equal('a=b')
+      signer.sign().path.should.equal('//a/b/..//c/.?a=b')
+    })
+
+    it('should normalize path in non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '//a/b/..//c/.?a=b'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/a/c')
+      canonical[2].should.equal('a=b')
+      signer.sign().path.should.equal('//a/b/..//c/.?a=b')
+    })
+
+    it('should normalize path in non-s3 with slash on the end', function() {
+      var signer = new RequestSigner({service: 'es', path: '//a/b/..//c/./?a=b'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/a/c/')
+      canonical[2].should.equal('a=b')
+      signer.sign().path.should.equal('//a/b/..//c/./?a=b')
+    })
+
+    it('should deal with complex query params in s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/?&a=&&=&%41&'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/')
+      canonical[2].should.equal('A=&a=')
+      signer.sign().path.should.equal('/?a=&A=')
+    })
+
+    it('should deal with complex query params in non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/?&a=&&=&%41&'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/')
+      canonical[2].should.equal('A=&a=')
+      signer.sign().path.should.equal('/?a=&A=')
+    })
+
+  })
+
   describe('with AWS test suite', function() {
     var CREDENTIALS = {
       accessKeyId: 'AKIDEXAMPLE',
-      secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY'
+      secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
     }
     var SERVICE = 'host'
 
@@ -265,13 +532,14 @@ describe('aws4', function() {
         }
         var body = reqLines.slice(i + 1).join('\n')
 
-        var signer = new (aws4.RequestSigner)({
+        var signer = new RequestSigner({
           service: SERVICE,
           method: method,
           path: path,
           headers: headers,
           body: body,
           doNotModifyHeaders: true,
+          doNotEncodePath: true,
         }, CREDENTIALS)
 
         signer.canonicalString().should.equal(canonicalString)

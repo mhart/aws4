@@ -15,6 +15,12 @@ function hash(string, encoding) {
   return crypto.createHash('sha256').update(string, 'utf8').digest(encoding)
 }
 
+function encodeRfc3986(string) {
+  return querystring.escape(string).replace(/[!'()*]/g, function(c) {
+    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
+  })
+}
+
 // request: { path | body, [host], [method], [headers], [service], [region] }
 // credentials: { accessKeyId, secretAccessKey, [sessionToken] }
 function RequestSigner(request, credentials) {
@@ -71,12 +77,14 @@ RequestSigner.prototype.createHost = function() {
   return service + region + '.amazonaws.com'
 }
 
-RequestSigner.prototype.sign = function() {
-  var request = this.request, headers = request.headers, parsedUrl, query
+RequestSigner.prototype.prepareRequest = function() {
+  this.parsePath()
+
+  var request = this.request, headers = request.headers, query
 
   if (request.signQuery) {
-    parsedUrl = url.parse(request.path || '/', true)
-    query = parsedUrl.query
+
+    this.parsedPath.query = query = this.parsedPath.query || {}
 
     if (this.credentials.sessionToken)
       query['X-Amz-Security-Token'] = this.credentials.sessionToken
@@ -92,11 +100,6 @@ RequestSigner.prototype.sign = function() {
     query['X-Amz-Algorithm'] = 'AWS4-HMAC-SHA256'
     query['X-Amz-Credential'] = this.credentials.accessKeyId + '/' + this.credentialString()
     query['X-Amz-SignedHeaders'] = this.signedHeaders()
-
-    delete parsedUrl.search
-    request.path = url.format(parsedUrl)
-
-    request.path += '&X-Amz-Signature=' + this.signature()
 
   } else {
 
@@ -121,10 +124,21 @@ RequestSigner.prototype.sign = function() {
 
     delete headers.Authorization
     delete headers.authorization
-    headers.Authorization = this.authHeader()
+  }
+}
+
+RequestSigner.prototype.sign = function() {
+  if (!this.parsedPath) this.prepareRequest()
+
+  if (this.request.signQuery) {
+    this.parsedPath.query['X-Amz-Signature'] = this.signature()
+  } else {
+    this.request.headers.Authorization = this.authHeader()
   }
 
-  return request
+  this.request.path = this.formatPath()
+
+  return this.request
 }
 
 RequestSigner.prototype.getDateTime = function() {
@@ -173,22 +187,44 @@ RequestSigner.prototype.stringToSign = function() {
 }
 
 RequestSigner.prototype.canonicalString = function() {
-  var pathStr = this.request.path || '/',
-      queryIx = pathStr.indexOf('?'),
+  if (!this.parsedPath) this.prepareRequest()
+
+  var pathStr = this.parsedPath.path,
+      query = this.parsedPath.query,
       queryStr = '',
+      normalizePath = this.service !== 's3',
+      decodePath = this.service === 's3' || this.request.doNotEncodePath,
+      decodeSlashesInPath = this.service === 's3',
+      firstValOnly = this.service === 's3',
       bodyHash = this.service === 's3' && this.request.signQuery ?
         'UNSIGNED-PAYLOAD' : hash(this.request.body || '', 'hex')
-  if (queryIx >= 0) {
-    var query = querystring.parse(pathStr.slice(queryIx + 1))
-    pathStr = pathStr.slice(0, queryIx)
+
+  if (query) {
     queryStr = querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
-      obj[key] = Array.isArray(query[key]) ? query[key].sort() : query[key]
+      if (!key) return obj
+      obj[key] = !Array.isArray(query[key]) ? query[key] :
+        (firstValOnly ? query[key][0] : query[key].slice().sort())
       return obj
-    }, {})).replace(/[!'()*]/g, function(c) { return '%' + c.charCodeAt(0).toString(16).toUpperCase() })
+    }, {}), null, null, {encodeURIComponent: encodeRfc3986})
   }
+  if (pathStr !== '/') {
+    if (normalizePath) pathStr = pathStr.replace(/\/{2,}/g, '/')
+    if (pathStr[0] === '/') pathStr = pathStr.slice(1)
+    pathStr = '/' + pathStr.split('/').reduce(function(path, piece) {
+      if (normalizePath && piece === '..') {
+        path.pop()
+      } else if (!normalizePath || piece !== '.') {
+        if (decodePath) piece = querystring.unescape(piece)
+        path.push(encodeRfc3986(piece))
+      }
+      return path
+    }, []).join('/')
+    if (decodeSlashesInPath) pathStr = pathStr.replace(/%2F/g, '/')
+  }
+
   return [
     this.request.method || 'GET',
-    url.resolve('/', pathStr.replace(/\/{2,}/g, '/')) || '/',
+    pathStr,
     queryStr,
     this.canonicalHeaders() + '\n',
     this.signedHeaders(),
@@ -230,6 +266,43 @@ RequestSigner.prototype.defaultCredentials = function() {
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY || env.AWS_SECRET_KEY,
     sessionToken: env.AWS_SESSION_TOKEN,
   }
+}
+
+RequestSigner.prototype.parsePath = function() {
+  var path = this.request.path || '/',
+      queryIx = path.indexOf('?'),
+      query = null
+
+  if (queryIx >= 0) {
+    query = querystring.parse(path.slice(queryIx + 1))
+    path = path.slice(0, queryIx)
+  }
+
+  // S3 doesn't always encode characters > 127 correctly and
+  // all services don't encode characters > 255 correctly
+  // So if there are non-reserved chars (and it's not already all % encoded), just encode them all
+  if (/[^0-9A-Za-z!'()*\-._~%/]/.test(path)) {
+    path = path.split('/').map(function(piece) {
+      return querystring.escape(querystring.unescape(piece))
+    }).join('/')
+  }
+
+  this.parsedPath = {
+    path: path,
+    query: query,
+  }
+}
+
+RequestSigner.prototype.formatPath = function() {
+  var path = this.parsedPath.path,
+      query = this.parsedPath.query
+
+  if (!query) return path
+
+  // Services don't support empty query string keys
+  if (query[''] != null) delete query['']
+
+  return path + '?' + querystring.stringify(query, null, null, {encodeURIComponent: encodeRfc3986})
 }
 
 aws4.RequestSigner = RequestSigner
