@@ -15,8 +15,9 @@ function hash(string, encoding) {
   return crypto.createHash('sha256').update(string, 'utf8').digest(encoding)
 }
 
-function encodeRfc3986(string) {
-  return querystring.escape(string).replace(/[!'()*]/g, function(c) {
+// This function assumes the string has already been percent encoded
+function encodeRfc3986(urlEncodedString) {
+  return urlEncodedString.replace(/[!'()*]/g, function(c) {
     return '%' + c.charCodeAt(0).toString(16).toUpperCase()
   })
 }
@@ -200,12 +201,12 @@ RequestSigner.prototype.canonicalString = function() {
         'UNSIGNED-PAYLOAD' : hash(this.request.body || '', 'hex')
 
   if (query) {
-    queryStr = querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
+    queryStr = encodeRfc3986(querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
       if (!key) return obj
       obj[key] = !Array.isArray(query[key]) ? query[key] :
         (firstValOnly ? query[key][0] : query[key].slice().sort())
       return obj
-    }, {}), null, null, {encodeURIComponent: encodeRfc3986})
+    }, {})))
   }
   if (pathStr !== '/') {
     if (normalizePath) pathStr = pathStr.replace(/\/{2,}/g, '/')
@@ -215,7 +216,7 @@ RequestSigner.prototype.canonicalString = function() {
         path.pop()
       } else if (!normalizePath || piece !== '.') {
         if (decodePath) piece = querystring.unescape(piece)
-        path.push(encodeRfc3986(piece))
+        path.push(encodeRfc3986(querystring.escape(piece)))
       }
       return path
     }, []).join('/')
@@ -302,7 +303,7 @@ RequestSigner.prototype.formatPath = function() {
   // Services don't support empty query string keys
   if (query[''] != null) delete query['']
 
-  return path + '?' + querystring.stringify(query, null, null, {encodeURIComponent: encodeRfc3986})
+  return path + '?' + encodeRfc3986(querystring.stringify(query))
 }
 
 aws4.RequestSigner = RequestSigner
