@@ -210,8 +210,7 @@ RequestSigner.prototype.canonicalString = function() {
   }
   if (pathStr !== '/') {
     if (normalizePath) pathStr = pathStr.replace(/\/{2,}/g, '/')
-    if (pathStr[0] === '/') pathStr = pathStr.slice(1)
-    pathStr = '/' + pathStr.split('/').reduce(function(path, piece) {
+    pathStr = pathStr.split('/').reduce(function(path, piece) {
       if (normalizePath && piece === '..') {
         path.pop()
       } else if (!normalizePath || piece !== '.') {
@@ -220,6 +219,7 @@ RequestSigner.prototype.canonicalString = function() {
       }
       return path
     }, []).join('/')
+    if (pathStr[0] !== '/') pathStr = '/' + pathStr
     if (decodeSlashesInPath) pathStr = pathStr.replace(/%2F/g, '/')
   }
 
