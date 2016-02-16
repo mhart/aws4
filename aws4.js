@@ -122,7 +122,7 @@ RequestSigner.prototype.prepareRequest = function() {
         headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
       if (this.service === 's3')
-        headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
+        headers['X-Amz-Content-Sha256'] = this.request.bodyHash || hash(this.request.body || '', 'hex')
 
       if (headers['X-Amz-Date'])
         this.datetime = headers['X-Amz-Date']
@@ -208,7 +208,7 @@ RequestSigner.prototype.canonicalString = function() {
       decodeSlashesInPath = this.service === 's3',
       firstValOnly = this.service === 's3',
       bodyHash = this.service === 's3' && this.request.signQuery ? 'UNSIGNED-PAYLOAD' :
-        (this.isCodeCommitGit ? '' : hash(this.request.body || '', 'hex'))
+        (this.isCodeCommitGit ? '' : (this.request.bodyHash || hash(this.request.body || '', 'hex')))
 
   if (query) {
     queryStr = encodeRfc3986(querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
