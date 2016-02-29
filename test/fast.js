@@ -142,6 +142,14 @@ describe('aws4', function() {
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
     })
+    it('should use custom port correctly', function() {
+      var opts = aws4.sign({hostname: 'localhost', port: '9000', service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
+    })
   })
 
   describe('#sign() with host', function() {
@@ -149,6 +157,14 @@ describe('aws4', function() {
       var opts = aws4.sign({host: 'sqs.us-east-1.amazonaws.com', headers: {Date: date}})
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
+    })
+    it('should use custom port correctly', function() {
+      var opts = aws4.sign({host: 'localhost', port: '9000', service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
     })
   })
 
@@ -550,4 +566,3 @@ describe('aws4', function() {
     })
   })
 })
-
