@@ -90,26 +90,6 @@ describe('aws4', function() {
     })
   })
 
-  describe('$sign() with AWS S3 compatible server at port 9000', function() {
-    it('should use passed in values', function() {
-      var headers = {
-        'X-Amz-Date': iso
-      }
-      var cred = {accessKeyId: 'A', secretAccessKey: 'B'},
-          opts = {service: 's3', host: 'localhost',
-                  protocol: 'http:', port: '9000',
-                  region: 'us-east-1', path: '/foo',
-                  method: 'PUT',
-                  headers: headers
-                 }
-      opts = aws4.sign(opts)
-      opts.headers.Authorization.should.equal(
-        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, '+
-        'SignedHeaders=host;x-amz-content-sha256;x-amz-date, ' +
-        'Signature=ae35e53a146502715cbcf69baa7fd5ad4c650f359e039612e14c17b92288f8d6')
-    })
-  })
-
   describe('#sign() with no host or region', function() {
     it('should add hostname and default region', function() {
       var opts = aws4.sign({service: 'sqs'})
@@ -162,6 +142,14 @@ describe('aws4', function() {
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
     })
+    it('should use custom port correctly', function() {
+      var opts = aws4.sign({hostname: 'localhost', port: '9000', service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
+    })
   })
 
   describe('#sign() with host', function() {
@@ -169,6 +157,14 @@ describe('aws4', function() {
       var opts = aws4.sign({host: 'sqs.us-east-1.amazonaws.com', headers: {Date: date}})
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
+    })
+    it('should use custom port correctly', function() {
+      var opts = aws4.sign({host: 'localhost', port: '9000', service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
     })
   })
 

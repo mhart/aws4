@@ -43,15 +43,12 @@ function RequestSigner(request, credentials) {
   if (!request.method && request.body)
     request.method = 'POST'
 
-  if (!headers.Host && !headers.host)
+  if (!headers.Host && !headers.host) {
     headers.Host = request.hostname || request.host || this.createHost()
-  // Handle this specially for AWS S3 compatible servers which support signature v4.
-  // If port is specified use it diligently.
-  if (request.port && this.service === 's3') {
-    if ((request.protocol === 'http:' && request.port !== 80) ||
-        (request.protocol === 'https:' && request.port !== 443)) {
-      headers.Host = headers.Host + ':' + request.port
-    }
+
+    // If a port is specified explicitly, use it as is
+    if (request.port)
+      headers.Host += ':' + request.port
   }
   if (!request.hostname && !request.host)
     request.hostname = headers.Host || headers.host
