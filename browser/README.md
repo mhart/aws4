@@ -16,7 +16,7 @@ var sigs = {
   codedeploy: aws4.sign({service: 'codedeploy', body: '{}', headers: {
     'Content-Type': 'application/x-amz-json-1.1',
     'X-Amz-Target': 'CodeDeploy_20141006.ListApplications',
-  }}),
+  }}, CREDS),
 }
 
 document.getElementById('content').innerHTML = JSON.stringify(sigs, null, 2)
