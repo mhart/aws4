@@ -499,6 +499,8 @@ With [npm](http://npmjs.org/) do:
 npm install aws4
 ```
 
+Can also be used [in the browser](./browser).
+
 Thanks
 ------
 
