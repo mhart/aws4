@@ -22,7 +22,7 @@ var sigs = {
 document.getElementById('content').innerHTML = JSON.stringify(sigs, null, 2)
 ```
 
-To compile this, run:
+To compile this, checkout this directory and run:
 
 ```console
 $ npm install

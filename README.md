@@ -5,7 +5,8 @@ aws4
 
 A small utility to sign vanilla node.js http(s) request options using Amazon's
 [AWS Signature Version 4](http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html).
-Also works [in the browser](./browser/README.md).
+
+Can also be used [in the browser](./browser).
 
 This signature is supported by nearly all Amazon services, including
 [S3](http://docs.aws.amazon.com/AmazonS3/latest/API/),
