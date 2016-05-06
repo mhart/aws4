@@ -9,12 +9,12 @@
     "build": "browserify -g aliasify -o bundle.js index.js"
   },
   "dependencies": {
-    "aws4": "^1.3.1"
+    "aws4": "^1.4.0"
   },
   "devDependencies": {
-    "aliasify": "^1.9.0",
-    "browserify": "^13.0.0",
-    "querystring-browser": "^1.0.3"
+    "aliasify": "^2.0.0",
+    "browserify": "^13.0.1",
+    "querystring-browser": "^1.0.4"
   },
   "aliasify": {
     "aliases": {
