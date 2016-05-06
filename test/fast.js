@@ -1,6 +1,7 @@
-require('should')
 var fs = require('fs'),
+    should = require('should'),
     aws4 = require('../'),
+    lru = require('../lru'),
     RequestSigner = aws4.RequestSigner,
     cred = {accessKeyId: 'ABCDEF', secretAccessKey: 'abcdef1234567890'},
     date = 'Wed, 26 Dec 2012 06:10:30 GMT',
@@ -565,4 +566,84 @@ describe('aws4', function() {
 
     })
   })
+})
+
+
+describe('lru', function() {
+
+  it('should return nothing if does not exist yet', function() {
+    var cache = lru(5)
+    should.not.exist(cache.get('a'))
+  })
+
+  it('should return value from single set', function() {
+    var cache = lru(5)
+    cache.set('a', 'A')
+    cache.get('a').should.equal('A')
+  })
+
+  it('should return value if just at capacity', function() {
+    var cache = lru(5)
+    cache.set('a', 'A')
+    cache.set('b', 'B')
+    cache.set('c', 'C')
+    cache.set('d', 'D')
+    cache.set('e', 'E')
+    cache.get('e').should.equal('E')
+    cache.get('d').should.equal('D')
+    cache.get('c').should.equal('C')
+    cache.get('b').should.equal('B')
+    cache.get('a').should.equal('A')
+  })
+
+  it('should not return value just over capacity', function() {
+    var cache = lru(5)
+    cache.set('a', 'A')
+    cache.set('b', 'B')
+    cache.set('c', 'C')
+    cache.set('d', 'D')
+    cache.set('e', 'E')
+    cache.set('f', 'F')
+    cache.get('f').should.equal('F')
+    cache.get('e').should.equal('E')
+    cache.get('d').should.equal('D')
+    cache.get('c').should.equal('C')
+    cache.get('b').should.equal('B')
+    should.not.exist(cache.get('a'))
+  })
+
+  it('should return value if get recently', function() {
+    var cache = lru(5)
+    cache.set('a', 'A')
+    cache.set('b', 'B')
+    cache.set('c', 'C')
+    cache.set('d', 'D')
+    cache.set('e', 'E')
+    cache.get('a').should.equal('A')
+    cache.set('f', 'F')
+    cache.get('f').should.equal('F')
+    cache.get('e').should.equal('E')
+    cache.get('d').should.equal('D')
+    cache.get('c').should.equal('C')
+    cache.get('a').should.equal('A')
+    should.not.exist(cache.get('b'))
+  })
+
+  it('should return value if set recently', function() {
+    var cache = lru(5)
+    cache.set('a', 'A')
+    cache.set('b', 'B')
+    cache.set('c', 'C')
+    cache.set('d', 'D')
+    cache.set('e', 'E')
+    cache.set('a', 'AA')
+    cache.set('f', 'F')
+    cache.get('f').should.equal('F')
+    cache.get('e').should.equal('E')
+    cache.get('d').should.equal('D')
+    cache.get('c').should.equal('C')
+    cache.get('a').should.equal('AA')
+    should.not.exist(cache.get('b'))
+  })
+
 })
