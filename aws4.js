@@ -122,7 +122,9 @@ RequestSigner.prototype.prepareRequest = function() {
       if (this.service === 's3')
         headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
 
-      if (headers['X-Amz-Date'])
+      var currentDateTime = new Date(new Date - 30000).toISOString().replace(/[:\-]|\.\d{3}/g, '');
+
+      if (headers['X-Amz-Date'] && headers['X-Amz-Date'] > currentDateTime)
         this.datetime = headers['X-Amz-Date']
       else
         headers['X-Amz-Date'] = this.getDateTime()
