@@ -71,6 +71,21 @@ describe('aws4', function() {
       signer.service.should.equal('sdb')
       signer.region.should.equal('us-east-1')
     })
+
+    it('should not set extra headers for CodeCommit Git access', function() {
+      var signer = new RequestSigner({service: 'codecommit', method: 'GIT', host: 'example.com'})
+      signer.request.headers.should.deepEqual({Host: 'example.com'})
+    })
+
+    it('should not have a "Z" at end of timestamp for CodeCommit Git access', function() {
+      var signer = new RequestSigner({service: 'codecommit', method: 'GIT', host: 'example.com'})
+      signer.getDateTime().should.not.match(/Z$/)
+    })
+
+    it('should not have a body hash in the canonical string for CodeCommit Git access', function() {
+      var signer = new RequestSigner({service: 'codecommit', method: 'GIT', host: 'example.com'})
+      signer.canonicalString().should.match(/\n$/)
+    })
   })
 
   describe('#sign() with no credentials', function() {
