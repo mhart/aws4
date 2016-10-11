@@ -52,6 +52,8 @@ function RequestSigner(request, credentials) {
   }
   if (!request.hostname && !request.host)
     request.hostname = headers.Host || headers.host
+
+  this.isCodeCommitGit = this.service === 'codecommit' && request.method === 'GIT'
 }
 
 RequestSigner.prototype.matchHost = function(host) {
@@ -109,7 +111,7 @@ RequestSigner.prototype.prepareRequest = function() {
 
   } else {
 
-    if (!(this.service === 'codecommit' && request.method === 'GIT') && !request.doNotModifyHeaders) {
+    if (!request.doNotModifyHeaders && !this.isCodeCommitGit) {
       if (request.body && !headers['Content-Type'] && !headers['content-type'])
         headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
 
@@ -155,8 +157,7 @@ RequestSigner.prototype.getDateTime = function() {
     this.datetime = date.toISOString().replace(/[:\-]|\.\d{3}/g, '')
 
     // Remove the trailing 'Z' on the timestamp string for CodeCommit git access
-    if (this.service === 'codecommit' && this.request.method === 'GIT')
-      this.datetime = this.datetime.slice(0, -1)
+    if (this.isCodeCommitGit) this.datetime = this.datetime.slice(0, -1)
   }
   return this.datetime
 }
@@ -206,12 +207,8 @@ RequestSigner.prototype.canonicalString = function() {
       decodePath = this.service === 's3' || this.request.doNotEncodePath,
       decodeSlashesInPath = this.service === 's3',
       firstValOnly = this.service === 's3',
-      bodyHash = ''
-
-  if (this.service === 's3' && this.request.signQuery)
-    bodyHash = 'UNSIGNED-PAYLOAD'
-  else if (this.service !== 'codecommit' || this.request.method !== 'GIT')
-    bodyHash = hash(this.request.body || '', 'hex')
+      bodyHash = this.service === 's3' && this.request.signQuery ? 'UNSIGNED-PAYLOAD' :
+        (this.isCodeCommitGit ? '' : hash(this.request.body || '', 'hex'))
 
   if (query) {
     queryStr = encodeRfc3986(querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {

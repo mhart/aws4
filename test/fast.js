@@ -74,6 +74,7 @@ describe('aws4', function() {
 
     it('should not set extra headers for CodeCommit Git access', function() {
       var signer = new RequestSigner({service: 'codecommit', method: 'GIT', host: 'example.com'})
+      signer.prepareRequest()
       signer.request.headers.should.deepEqual({Host: 'example.com'})
     })
 
@@ -256,6 +257,21 @@ describe('aws4', function() {
         '/some-bucket?a=%21%27&b=%28%29%2A&X-Amz-Date=20121226T061030Z&X-Amz-Expires=86400&X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
         'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&' +
         'X-Amz-Signature=5f3e8e3406e27471183900f8ee891a6ae40e959c05394b4271a2b5b543d5a14a')
+    })
+  })
+
+  describe('#signature() with CodeCommit Git access', function() {
+    it('should generate signature correctly', function() {
+      var signer = new RequestSigner({
+        service: 'codecommit',
+        host: 'git-codecommit.us-east-1.amazonaws.com',
+        method: 'GIT',
+        path: '/v1/repos/MyAwesomeRepo',
+      })
+      signer.request.headers.Date = date
+      signer.getDateTime().should.equal('20121226T061030')
+      delete signer.request.headers.Date
+      signer.signature().should.equal('2a9a182eb6afc3859ee590af942564b53b0c4e5beac2893052515401d06af92a')
     })
   })
 
