@@ -100,8 +100,8 @@ RequestSigner.prototype.prepareRequest = function() {
     if (this.service === 's3' && !query['X-Amz-Expires'])
       query['X-Amz-Expires'] = 86400
 
-    if (query['X-Amz-Date'])
-      this.datetime = query['X-Amz-Date']
+    if (query['X-Amz-Date'] || query['x-amz-date'])
+      this.datetime = query['X-Amz-Date'] || query['x-amz-date']
     else
       query['X-Amz-Date'] = this.getDateTime()
 
@@ -124,8 +124,8 @@ RequestSigner.prototype.prepareRequest = function() {
       if (this.service === 's3')
         headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
 
-      if (headers['X-Amz-Date'])
-        this.datetime = headers['X-Amz-Date']
+      if (headers['X-Amz-Date'] || headers['x-amz-date'] || headers['date'] || headers['Date'])
+        this.datetime = headers['X-Amz-Date'] || headers['x-amz-date'] || headers['date'] || headers['Date']
       else
         headers['X-Amz-Date'] = this.getDateTime()
     }
