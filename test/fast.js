@@ -260,6 +260,35 @@ describe('aws4', function() {
     })
   })
 
+  describe('#sign() with bodyHash', function() {
+    it('should use passed hash as X-Amz-Content-Sha256 header', function(){
+      var opts = aws4.sign({
+        service: 's3',
+        method: 'PUT',
+        path: '/some-bucket/file.txt',
+        body: 'Test Body',
+        bodyHash: 'My-Generated-Body-Hash'
+      })
+      opts.headers['X-Amz-Content-Sha256'].should.equal('My-Generated-Body-Hash')
+    })
+    it('should use passed hash in Authorization header', function(){
+      var opts = aws4.sign({
+        service: 's3',
+        method: 'PUT',
+        path: '/some-bucket/file.txt',
+        body: 'Test Body',
+        bodyHash: 'My-Generated-Body-Hash',
+        headers: {
+          Date: date,
+        }
+      })
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
+        'SignedHeaders=content-length;content-type;date;host;x-amz-content-sha256;x-amz-date, ' + 
+        'Signature=afa4074a64185317be81ed18953c6df9ee3a63507e6711ad79a7534f4c0b0c54')
+    })
+  })
+
   describe('#signature() with CodeCommit Git access', function() {
     it('should generate signature correctly', function() {
       var signer = new RequestSigner({
