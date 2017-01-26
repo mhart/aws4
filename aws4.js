@@ -146,6 +146,11 @@ RequestSigner.prototype.sign = function() {
 
   this.request.path = this.formatPath()
 
+  if (this.request.uri) {
+    var uriParts = this.request.uri.match(/(http(?:s|):\/\/)([^\/]+)(.+)/)
+    this.request.uri = uriParts[1] + uriParts[2] + this.parsedPath.path
+  }
+
   return this.request
 }
 
