@@ -260,6 +260,63 @@ describe('aws4', function() {
     })
   })
 
+  describe('#sign() without uri', function() {
+    it('should not add add uri to request', function() {
+      var opts = aws4.sign({
+        service: 'dynamodb',
+        path: '/items/module:sub-module:item.collection:12345' + iso,
+        headers: {
+          'Content-Type': 'application/x-amz-json-1.0',
+          'X-Amz-Target': 'DynamoDB_20120810.ListTables'
+        },
+        body: '{}',
+        signQuery: true
+      })
+      if (opts.uri !== undefined) {
+        throw 'uri has been added to the original request'
+      }
+    })
+  })
+
+  describe('#sign() with uri and signQuery=false', function() {
+    it('should update uri in request with encoded path', function() {
+      var opts = aws4.sign({
+        service: 'dynamodb',
+        path: '/items/module:sub-module:item.collection:12345',
+        host: 'host.of.app',
+        uri: 'https://host.of.app/items/module:sub-module:item.collection:12345',
+        headers: {
+          'Content-Type': 'application/x-amz-json-1.0',
+          'X-Amz-Target': 'DynamoDB_20120810.ListTables'
+        },
+        body: '{}',
+        signQuery: false
+      })
+      opts.uri.should.equal('https://host.of.app/items/module%3Asub-module%3Aitem.collection%3A12345')
+    })
+  })
+
+  describe('#sign() with uri and signQuery=true', function() {
+    it('should update uri in request with encoded path', function() {
+      var opts = aws4.sign({
+        service: 'dynamodb',
+        path: '/items/module:sub-module:item.collection:12345' + '/?X-Amz-Date=' + iso,
+        host: 'host.of.app',
+        uri: 'https://host.of.app/items/module:sub-module:item.collection:12345',
+        headers: {
+          'Content-Type': 'application/x-amz-json-1.0',
+          'X-Amz-Target': 'DynamoDB_20120810.ListTables'
+        },
+        body: '{}',
+        signQuery: true
+      })
+      opts.uri.should.equal('https://host.of.app/items/module%3Asub-module%3Aitem.collection%3A12345/?X-Amz-Date=20121226T061030Z&' +
+        'X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fdynamodb%2Faws4_request&' +
+        'X-Amz-SignedHeaders=content-type%3Bhost%3Bx-amz-target&' +
+        'X-Amz-Signature=4d6b0a644e1b9e98d966f4590b2c1c6c0aff90738522fe988175deb348f0daa9')
+    })
+  })
+
   describe('#signature() with CodeCommit Git access', function() {
     it('should generate signature correctly', function() {
       var signer = new RequestSigner({
