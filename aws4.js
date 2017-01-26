@@ -148,7 +148,7 @@ RequestSigner.prototype.sign = function() {
 
   if (this.request.uri) {
     var uriParts = this.request.uri.match(/(http(?:s|):\/\/)([^\/]+)(.+)/)
-    this.request.uri = uriParts[1] + uriParts[2] + this.parsedPath.path
+    this.request.uri = uriParts[1] + uriParts[2] + this.request.path
   }
 
   return this.request
