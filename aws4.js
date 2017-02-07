@@ -328,5 +328,5 @@ RequestSigner.prototype.formatPath = function() {
 aws4.RequestSigner = RequestSigner
 
 aws4.sign = function(request, credentials) {
-  return new RequestSigner(request, credentials).sign()
+  return new RequestSigner(Object.assign({}, request), Object.assign({}, credentials)).sign()
 }

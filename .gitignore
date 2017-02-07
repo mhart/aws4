@@ -2,3 +2,7 @@ node_modules
 npm-debug.log
 coverage*
 .tern-port
+
+# Intellij/WebStorm
+*.iml
+.idea/
