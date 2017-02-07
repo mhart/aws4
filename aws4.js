@@ -121,8 +121,8 @@ RequestSigner.prototype.prepareRequest = function() {
       if (this.credentials.sessionToken)
         headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
-      if (this.service === 's3')
-        headers['X-Amz-Content-Sha256'] = this.request.bodyHash || hash(this.request.body || '', 'hex')
+      if (this.service === 's3' && !headers['X-Amz-Content-Sha256'] && !headers['x-amz-content-sha256'])
+        headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
 
       if (headers['X-Amz-Date'])
         this.datetime = headers['X-Amz-Date']
