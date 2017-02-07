@@ -118,14 +118,14 @@ RequestSigner.prototype.prepareRequest = function() {
       if (request.body && !headers['Content-Length'] && !headers['content-length'])
         headers['Content-Length'] = Buffer.byteLength(request.body)
 
-      if (this.credentials.sessionToken)
+      if (this.credentials.sessionToken && !headers['X-Amz-Security-Token'] && !headers['x-amz-security-token'])
         headers['X-Amz-Security-Token'] = this.credentials.sessionToken
 
       if (this.service === 's3' && !headers['X-Amz-Content-Sha256'] && !headers['x-amz-content-sha256'])
         headers['X-Amz-Content-Sha256'] = hash(this.request.body || '', 'hex')
 
-      if (headers['X-Amz-Date'])
-        this.datetime = headers['X-Amz-Date']
+      if (headers['X-Amz-Date'] || headers['x-amz-date'])
+        this.datetime = headers['X-Amz-Date'] || headers['x-amz-date']
       else
         headers['X-Amz-Date'] = this.getDateTime()
     }
