@@ -169,7 +169,7 @@ describe('aws4', function() {
     })
     it('should remove protocol from host / hostname', function() {
       var host = 'sqs.us-east-1.amazonaws.com';
-      var opts = aws4.sign({hostname: `https://${host}`, headers: {Date: date}})
+      var opts = aws4.sign({hostname: 'https://'+host, headers: {Date: date}})
       opts.headers['Host'].should.equal(host)
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
@@ -192,7 +192,7 @@ describe('aws4', function() {
     })
     it('should remove protocol from host', function() {
       var host = 'sqs.us-east-1.amazonaws.com';
-      var opts = aws4.sign({host: `https://${host}`, headers: {Date: date}})
+      var opts = aws4.sign({host: 'https://'+host, headers: {Date: date}})
       opts.headers['Host'].should.equal(host)
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
