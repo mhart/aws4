@@ -223,7 +223,7 @@ RequestSigner.prototype.canonicalString = function() {
     queryStr = encodeRfc3986(querystring.stringify(Object.keys(query).sort().reduce(function(obj, key) {
       if (!key) return obj
       obj[key] = !Array.isArray(query[key]) ? query[key] :
-        (firstValOnly ? query[key][0] : query[key].slice().sort())
+        (firstValOnly ? query[key][0] : query[key])
       return obj
     }, {})))
   }
