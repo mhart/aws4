@@ -1,6 +1,6 @@
 GET
 /
-foo=a&foo=b
+fooA=b&fooA=a&fooB=a&fooB=b
 date:Mon, 09 Sep 2011 23:36:00 GMT
 host:host.foo.com
 

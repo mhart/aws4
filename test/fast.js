@@ -535,12 +535,12 @@ describe('aws4', function() {
     })
 
     it('should work with query param order in non-s3', function() {
-      var signer = new RequestSigner({service: 'es', path: '/?a=b&a=B&a=b&a=c'})
+      var signer = new RequestSigner({service: 'es', path: '/?b=d&a=b&a=a&b=e&a=c'})
       var canonical = signer.canonicalString().split('\n')
 
       canonical[1].should.equal('/')
-      canonical[2].should.equal('a=B&a=b&a=b&a=c')
-      signer.sign().path.should.equal('/?a=b&a=B&a=b&a=c')
+      canonical[2].should.equal('a=b&a=a&a=c&b=d&b=e')
+      signer.sign().path.should.equal('/?b=d&b=e&a=b&a=a&a=c')
     })
 
     it('should not normalize path in s3', function() {
