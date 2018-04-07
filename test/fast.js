@@ -1,4 +1,5 @@
 var fs = require('fs'),
+    path = require('path'),
     should = require('should'),
     aws4 = require('../'),
     lru = require('../lru'),
@@ -595,24 +596,31 @@ describe('aws4', function() {
       accessKeyId: 'AKIDEXAMPLE',
       secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
     }
-    var SERVICE = 'host'
+    var SERVICE = 'service'
 
-    var tests = fs.readdirSync(__dirname + '/fixtures')
-      .map(function(name) { return (name.match(/^(.+)\.authz/) || [])[1] })
-      .filter(Boolean)
+    var suiteDir = path.join(__dirname, 'aws-sig-v4-test-suite')
+    var ignoreDirs = ['get-header-value-multiline', 'normalize-path', 'post-sts-token'] // too annoying to parse multiline
+    var tests = fs.readdirSync(suiteDir)
+      .concat(fs.readdirSync(path.join(suiteDir, 'normalize-path')).map(function(d) { return path.join('normalize-path', d) }))
+      .filter(function(t) { return !~t.indexOf('.') && !~ignoreDirs.indexOf(t) })
 
     tests.forEach(function(test) {
 
       it('should pass ' + test, function() {
-        var request = fs.readFileSync(__dirname + '/fixtures/' + test + '.req', 'utf8').replace(/\r/g, '')
-        var canonicalString = fs.readFileSync(__dirname + '/fixtures/' + test + '.creq', 'utf8').replace(/\r/g, '')
-        var stringToSign = fs.readFileSync(__dirname + '/fixtures/' + test + '.sts', 'utf8').replace(/\r/g, '')
-        var outputAuth = fs.readFileSync(__dirname + '/fixtures/' + test + '.authz', 'utf8').replace(/\r/g, '')
+        var files = fs.readdirSync(path.join(suiteDir, test))
+        var readFile = function(regex) {
+          var file = path.join(suiteDir, test, files.filter(regex.test.bind(regex))[0])
+          return fs.readFileSync(file, 'utf8').replace(/\r/g, '')
+        }
+        var request = readFile(/\.req$/)
+        var canonicalString = readFile(/\.creq$/)
+        var stringToSign = readFile(/\.sts$/)
+        var outputAuth = readFile(/\.authz$/)
 
         var reqLines = request.split('\n')
         var req = reqLines[0].split(' ')
         var method = req[0]
-        var path = req[1]
+        var pathname = req.slice(1, -1).join(' ')
         var headers = {}
         for (var i = 1; i < reqLines.length; i++) {
           if (!reqLines[i]) break
@@ -622,7 +630,7 @@ describe('aws4', function() {
           if (headers[header]) {
             headers[header] = headers[header].split(',')
             headers[header].push(value)
-            headers[header] = headers[header].sort().join(',')
+            headers[header] = headers[header].join(',')
           } else {
             headers[header] = value
           }
@@ -632,12 +640,16 @@ describe('aws4', function() {
         var signer = new RequestSigner({
           service: SERVICE,
           method: method,
-          path: path,
+          path: pathname,
           headers: headers,
           body: body,
           doNotModifyHeaders: true,
           doNotEncodePath: true,
         }, CREDENTIALS)
+
+        if (signer.datetime == null && headers['x-amz-date']) {
+          signer.datetime = headers['x-amz-date']
+        }
 
         signer.canonicalString().should.equal(canonicalString)
         signer.stringToSign().should.equal(stringToSign)
