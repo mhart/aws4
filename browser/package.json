@@ -6,19 +6,12 @@
   "author": "Michael Hart <michael.hart.au@gmail.com> (http://github.com/mhart)",
   "license": "ISC",
   "scripts": {
-    "build": "browserify -g aliasify -o bundle.js index.js"
+    "build": "browserify -o bundle.js index.js"
   },
   "dependencies": {
-    "aws4": "^1.4.0"
+    "aws4": "^1.7.0"
   },
   "devDependencies": {
-    "aliasify": "^2.0.0",
-    "browserify": "^13.0.1",
-    "querystring-browser": "^1.0.4"
-  },
-  "aliasify": {
-    "aliases": {
-      "querystring": "querystring-browser"
-    }
+    "browserify": "^16.1.1"
   }
 }
