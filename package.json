@@ -1,6 +1,6 @@
 {
   "name": "aws4",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Signs and prepares requests using AWS Signature Version 4",
   "author": "Michael Hart <michael.hart.au@gmail.com> (http://github.com/mhart)",
   "main": "aws4.js",
