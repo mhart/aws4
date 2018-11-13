@@ -6,7 +6,7 @@ aws4
 A small utility to sign vanilla node.js http(s) request options using Amazon's
 [AWS Signature Version 4](http://docs.amazonwebservices.com/general/latest/gr/signature-version-4.html).
 
-Can also be used [in the browser](./browser).
+Can also be used [in the browser](./browser). A minimized build for the browser is available at [aws4-tiny](https://github.com/emdgroup/aws4-tiny).
 
 This signature is supported by nearly all Amazon services, including
 [S3](http://docs.aws.amazon.com/AmazonS3/latest/API/),
@@ -508,7 +508,7 @@ With [npm](http://npmjs.org/) do:
 npm install aws4
 ```
 
-Can also be used [in the browser](./browser).
+Can also be used [in the browser](./browser). A minimized build for the browser is available at [aws4-tiny](https://github.com/emdgroup/aws4-tiny).
 
 Thanks
 ------
