@@ -67,5 +67,8 @@
   },
   "scripts": {
     "test": "mocha ./test/fast.js ./test/slow.js -b -t 100s -R list"
+  },
+  "dependencies": {
+    "object-assign": "^4.1.1"
   }
 }

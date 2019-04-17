@@ -1,6 +1,7 @@
 var aws4 = exports,
     url = require('url'),
     querystring = require('querystring'),
+    objectAssign = require('object-assign'),
     crypto = require('crypto'),
     lru = require('./lru'),
     credentialsCache = lru(1000)
@@ -28,7 +29,7 @@ function RequestSigner(request, credentials) {
 
   if (typeof request === 'string') request = url.parse(request)
 
-  var headers = request.headers = Object.assign({}, (request.headers || {})),
+  var headers = request.headers = objectAssign({}, (request.headers || {})),
       hostParts = this.matchHost(request.hostname || request.host || headers.Host || headers.host)
 
   this.request = request
