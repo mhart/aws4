@@ -97,6 +97,16 @@ describe('aws4', function() {
     })
   })
 
+  describe('#sign() with custom headers', function() {
+    it('should not modify modify provided headers', function() {
+      var cred = {accessKeyId: 'A', secretAccessKey: 'B'};
+      var headers = Object.freeze({Date: date});
+      var opts = aws4.sign({service: 'sqs', headers: headers}, cred);
+
+      should.notStrictEqual(opts.headers, headers);
+    });
+  })
+
   describe('#sign() with credentials', function() {
     it('should use passed in values', function() {
       var cred = {accessKeyId: 'A', secretAccessKey: 'B'},
