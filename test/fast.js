@@ -259,6 +259,23 @@ describe('aws4', function() {
         'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&' +
         'X-Amz-Signature=5f3e8e3406e27471183900f8ee891a6ae40e959c05394b4271a2b5b543d5a14a')
     })
+
+    it('should work with none service host', function() {
+      var opts = aws4.sign({
+        path: '/?X-Amz-Date=' + iso,
+        headers: {
+          host: '.us-east-1.amazonaws.com',
+          'content-type': 'application/json',
+        },
+        body: '{}',
+        signQuery: true,
+      })
+      opts.path.should.equal(
+        '/?X-Amz-Date=20121226T061030Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&' +
+        'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2F%2Faws4_request&' +
+        'X-Amz-SignedHeaders=content-type%3Bhost&' +
+        'X-Amz-Signature=96563a98f043840f22f2859f925eb1f038504848a7b7c7512c42fd0508bee5c8')
+    })
   })
 
   describe('#sign() with X-Amz-Content-Sha256 header', function() {
