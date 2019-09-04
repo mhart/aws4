@@ -471,6 +471,7 @@ populated if they don't already exist:
 - `headers['Content-Type']` (will use `'application/x-www-form-urlencoded; charset=utf-8'`
   if not given and there is a `body`)
 - `headers['Date']` (used to calculate the signature date if given, otherwise `new Date` is used)
+- `doNotEncodePath` (`false` by default, use `true` if some special characters are being double encoded)
 
 Your AWS credentials (which can be found in your
 [AWS console](https://portal.aws.amazon.com/gp/aws/securityCredentials))
