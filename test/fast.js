@@ -13,19 +13,10 @@ var fs = require('fs'),
 
 describe('aws4', function() {
 
-  // Save and ensure we restore process.env
-  var envAccessKeyId, envSecretAccessKey
-
   before(function() {
-    envAccessKeyId = process.env.AWS_ACCESS_KEY_ID
-    envSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
     process.env.AWS_ACCESS_KEY_ID = cred.accessKeyId
     process.env.AWS_SECRET_ACCESS_KEY = cred.secretAccessKey
-  })
-
-  after(function() {
-    process.env.AWS_ACCESS_KEY_ID = envAccessKeyId
-    process.env.AWS_SECRET_ACCESS_KEY = envSecretAccessKey
+    delete process.env.AWS_SESSION_TOKEN
   })
 
   describe('#sign() when constructed with string url', function() {
@@ -401,21 +392,21 @@ describe('aws4', function() {
     })
 
     it('should work with RFC-3986 chars with s3', function() {
-      var signer = new RequestSigner({service: 's3', path: '/!\'()*%21%27%28%29%2A'})
+      var signer = new RequestSigner({service: 's3', path: '/!\'()*@%21%27%28%29%2A?a=A&*=a&@=b'})
       var canonical = signer.canonicalString().split('\n')
 
-      canonical[1].should.equal('/%21%27%28%29%2A%21%27%28%29%2A')
-      canonical[2].should.equal('')
-      signer.sign().path.should.equal('/!\'()*%21%27%28%29%2A')
+      canonical[1].should.equal('/%21%27%28%29%2A%40%21%27%28%29%2A')
+      canonical[2].should.equal('%2A=a&%40=b&a=A')
+      signer.sign().path.should.equal('/!\'()*@%21%27%28%29%2A?a=A&%2A=a&%40=b')
     })
 
     it('should work with RFC-3986 chars with non-s3', function() {
-      var signer = new RequestSigner({service: 'es', path: '/!\'()*%21%27%28%29%2A'})
+      var signer = new RequestSigner({service: 'es', path: '/!\'()*@%21%27%28%29%2A?a=A&*=a&@=b'})
       var canonical = signer.canonicalString().split('\n')
 
-      canonical[1].should.equal('/%21%27%28%29%2A%2521%2527%2528%2529%252A')
-      canonical[2].should.equal('')
-      signer.sign().path.should.equal('/!\'()*%21%27%28%29%2A')
+      canonical[1].should.equal('/%21%27%28%29%2A%40%2521%2527%2528%2529%252A')
+      canonical[2].should.equal('%2A=a&%40=b&a=A')
+      signer.sign().path.should.equal('/!\'()*@%21%27%28%29%2A?a=A&%2A=a&%40=b')
     })
 
     it('should normalize casing on percent encoding with s3', function() {
@@ -597,63 +588,29 @@ describe('aws4', function() {
       secretAccessKey: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
     }
     var SERVICE = 'service'
+    var DATETIME = '20150830T123600Z'
 
-    var suiteDir = path.join(__dirname, 'aws-sig-v4-test-suite')
-    var ignoreDirs = ['get-header-value-multiline', 'normalize-path', 'post-sts-token'] // too annoying to parse multiline
-    var tests = fs.readdirSync(suiteDir)
-      .concat(fs.readdirSync(path.join(suiteDir, 'normalize-path')).map(function(d) { return path.join('normalize-path', d) }))
-      .filter(function(t) { return !~t.indexOf('.') && !~ignoreDirs.indexOf(t) })
+    awsFixtures().forEach(function(test) {
 
-    tests.forEach(function(test) {
-
-      it('should pass ' + test, function() {
-        var files = fs.readdirSync(path.join(suiteDir, test))
-        var readFile = function(regex) {
-          var file = path.join(suiteDir, test, files.filter(regex.test.bind(regex))[0])
-          return fs.readFileSync(file, 'utf8').replace(/\r/g, '')
-        }
-        var request = readFile(/\.req$/)
-        var canonicalString = readFile(/\.creq$/)
-        var stringToSign = readFile(/\.sts$/)
-        var outputAuth = readFile(/\.authz$/)
-
-        var reqLines = request.split('\n')
-        var req = reqLines[0].split(' ')
-        var method = req[0]
-        var pathname = req.slice(1, -1).join(' ')
-        var headers = {}
-        for (var i = 1; i < reqLines.length; i++) {
-          if (!reqLines[i]) break
-          var colonIx = reqLines[i].indexOf(':')
-          var header = reqLines[i].slice(0, colonIx).toLowerCase()
-          var value = reqLines[i].slice(colonIx + 1)
-          if (headers[header]) {
-            headers[header] = headers[header].split(',')
-            headers[header].push(value)
-            headers[header] = headers[header].join(',')
-          } else {
-            headers[header] = value
-          }
-        }
-        var body = reqLines.slice(i + 1).join('\n')
-
+      it('should pass ' + test.test, function() {
         var signer = new RequestSigner({
           service: SERVICE,
-          method: method,
-          path: pathname,
-          headers: headers,
-          body: body,
+          method: test.method,
+          host: test.host,
+          path: test.pathname,
+          headers: headerArrayToObject(test.headers),
+          body: test.body,
           doNotModifyHeaders: true,
           doNotEncodePath: true,
         }, CREDENTIALS)
 
-        if (signer.datetime == null && headers['x-amz-date']) {
-          signer.datetime = headers['x-amz-date']
+        if (signer.datetime == null) {
+          signer.datetime = DATETIME
         }
 
-        signer.canonicalString().should.equal(canonicalString)
-        signer.stringToSign().should.equal(stringToSign)
-        signer.sign().headers.Authorization.should.equal(outputAuth)
+        signer.canonicalString().should.equal(test.canonicalString)
+        signer.stringToSign().should.equal(test.stringToSign)
+        signer.sign().headers.Authorization.should.equal(test.authHeader)
       })
 
     })
@@ -739,3 +696,71 @@ describe('lru', function() {
   })
 
 })
+
+
+function awsFixtures() {
+  return matchingFiles(path.join(__dirname, 'aws-sig-v4-test-suite'), /\.req$/).map(function(file) {
+    var test = file.split('/').pop().split('.')[0]
+    var filePieces = fs.readFileSync(file, 'utf8').trim().split('\n\n')
+    var preamble = filePieces[0]
+    var body = filePieces[1]
+    var lines = (preamble + '\n').split('\n')
+    var methodPath = lines[0].split(' ')
+    var method = methodPath[0]
+    var pathname = methodPath.slice(1, -1).join(' ')
+    var headerLines = lines.slice(1).join('\n').split(':')
+    var headers = []
+    var url = ''
+    var host = ''
+    for (var i = 0; i < headerLines.length - 1; i++) {
+      var name = headerLines[i]
+      var newlineIx = headerLines[i + 1].lastIndexOf('\n')
+      var value = headerLines[i + 1].slice(0, newlineIx)
+      headerLines[i + 1] = headerLines[i + 1].slice(newlineIx + 1)
+      if (name.toLowerCase() === 'host') {
+        host = value
+        url = 'https://' + value + pathname
+      } else {
+        value.split('\n').forEach(function(v) { headers.push([name, v]) })
+      }
+    }
+    var canonicalString = fs.readFileSync(file.replace(/\.req$/, '.creq'), 'utf8').trim()
+    var stringToSign = fs.readFileSync(file.replace(/\.req$/, '.sts'), 'utf8').trim()
+    var authHeader = fs.readFileSync(file.replace(/\.req$/, '.authz'), 'utf8').trim()
+
+    return {
+      test: test,
+      method: method,
+      url: url,
+      host: host,
+      pathname: pathname,
+      headers: headers,
+      body: body,
+      canonicalString: canonicalString,
+      stringToSign: stringToSign,
+      authHeader: authHeader,
+    }
+  })
+}
+
+function matchingFiles(dir, regex) {
+  var ls = fs.readdirSync(dir).map(function(file) { return path.join(dir, file) })
+  var dirs = ls.filter(function(file) { return fs.lstatSync(file).isDirectory() })
+  var files = ls.filter(regex.test.bind(regex))
+  dirs.forEach(function(dir) { files = files.concat(matchingFiles(dir, regex)) })
+  return files
+}
+
+function headerArrayToObject(headersList) {
+  var headers = Object.create(null)
+  headersList.forEach(function(headerEntry) {
+    var headerName = headerEntry[0]
+    var headerValue = headerEntry[1].trim()
+    if (headers[headerName] != null) {
+      headers[headerName] += ',' + headerValue
+    } else {
+      headers[headerName] = headerValue
+    }
+  })
+  return headers
+}

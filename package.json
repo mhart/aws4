@@ -66,6 +66,6 @@
     "should": "^8.2.2"
   },
   "scripts": {
-    "test": "mocha ./test/fast.js ./test/slow.js -b -t 100s -R list"
+    "test": "mocha ./test/fast.js -b -t 100s -R list"
   }
 }
