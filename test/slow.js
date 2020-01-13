@@ -20,11 +20,14 @@ void (async() => {
     '//a/b/..//c/./?a=b',
     '/?&a=&&=&%41&',
     '/?a=A&*=a&@=b',
+    '/?{~>)[=|\':\'_"&$*\'A+=a^~0$&A:{<$=/[<}>&^|<}/={^~|円&;^/( =({A-~&円/)円0=^*<:&){!|<=>[-(~',
+    '/?{~>)[=|\':\'_"&$*\'A+=a^~0$&A:{<$=/[<}>&^|<}/={^~|&;^/( =({A-~&/)0=^*<:&){!|<=>[-(~',
+    '/?s-=s-&s-=s&s',
+    '/?s-{~>)[=|\':\'_"&s-{~>)[=a^~0$&s-{~>)[=A-~&円&s',
   ]
 
   let tests = [{
     url: 'https://runtime.sagemaker.us-east-1.amazonaws.com/a=b~ and c * \' (what+ever)!?a=b~ and c * \' @(whatever)!',
-    signQuery: true,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-amz-json-1.1',
@@ -364,4 +367,3 @@ async function request(options) {
     }).on('error', onError).end(options.body)
   })
 }
-
