@@ -517,6 +517,15 @@ describe('aws4', function() {
       signer.sign().path.should.equal('/%2f?a=%2F&%2F=%2F')
     })
 
+    it('should work with query param order in s3 with key prefix matches', function() {
+      var signer = new RequestSigner({service: 's3', path: '/?search&search-ver=2'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/')
+      canonical[2].should.equal('search=&search-ver=2')
+      signer.sign().path.should.equal('/?search=&search-ver=2')
+    })
+
     it('should work with query param order in s3', function() {
       var signer = new RequestSigner({service: 's3', path: '/?a=b&a=B&a=b&a=c'})
       var canonical = signer.canonicalString().split('\n')
