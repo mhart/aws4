@@ -235,7 +235,22 @@ RequestSigner.prototype.canonicalString = function() {
         reducedQuery[key].forEach(function(val) { encodedQueryPieces.push(encodeRfc3986(encodedPrefix + encodeURIComponent(val))) })
       }
     })
-    queryStr = encodedQueryPieces.sort().join('&')
+    queryStr = encodedQueryPieces.sort(function (a, b) {
+      const a_name = a.split(/=/)[0];
+      const b_name = b.split(/=/)[0];
+      if (a_name < b_name) {
+        return -1
+      } else if (a_name > b_name) {
+        return 1
+      } else {
+        if (a < b) {
+          return -1
+        } else if (a > b) {
+          return 1
+        }
+        return 0
+      }
+    }).join('&');
   }
   if (pathStr !== '/') {
     if (normalizePath) pathStr = pathStr.replace(/\/{2,}/g, '/')
