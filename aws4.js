@@ -83,6 +83,10 @@ RequestSigner.prototype.isSingleRegion = function() {
 }
 
 RequestSigner.prototype.createHost = function() {
+  if(this.request.uri) {
+    this.request.path = url.parse(this.request.uri).path
+    return url.parse(this.request.uri).host
+  }
   var region = this.isSingleRegion() ? '' :
         (this.service === 's3' && this.region !== 'us-east-1' ? '-' : '.') + this.region,
       service = this.service === 'ses' ? 'email' : this.service

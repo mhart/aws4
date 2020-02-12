@@ -370,3 +370,16 @@ request(aws4.sign({
 
 //request(aws4.sign({service: 'sdb', path: '/?Action=ListDomains&Version=2009-04-15'}))
 
+// API Gateway with amazonaws domain name
+request(aws4.sign({
+  uri: 'https://xxxxxx.execute-api.us-west-2.amazonaws.com/v1/required-iam-auth',
+  service: 'execute-api',
+  region: 'us-west-2'
+}))
+
+// API Gateway with custom domain name
+request(aws4.sign({
+  uri: 'https://<custom_domain_name>/required-iam-auth',
+  service: 'execute-api',
+  region: 'us-west-2'
+}))
