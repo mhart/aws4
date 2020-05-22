@@ -64,6 +64,48 @@ describe('aws4', function() {
       signer.region.should.equal('us-east-1')
     })
 
+    it('should recognise older S3 bare url', function() {
+      var signer = new RequestSigner('https://s3.amazonaws.com/jbarr-public/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('us-east-1')
+    })
+
+    it('should recognise older S3 regional url', function() {
+      var signer = new RequestSigner('https://s3.eu-west-3.amazonaws.com/jbarr-public/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('eu-west-3')
+    })
+
+    it('should recognise super old S3 regional url', function() {
+      var signer = new RequestSigner('https://s3-eu-west-1.amazonaws.com/jbarr-public/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('eu-west-1')
+    })
+
+    it('should recognise newer S3 bare url', function() {
+      var signer = new RequestSigner('https://jbarr-public.s3.amazonaws.com/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('us-east-1')
+    })
+
+    it('should recognise newer S3 bare url', function() {
+      var signer = new RequestSigner('https://jbarr-public.s3.amazonaws.com/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('us-east-1')
+    })
+
+    it('should recognise newer S3 regional url', function() {
+      var signer = new RequestSigner('https://jbarr-public.s3.eu-west-3.amazonaws.com/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('eu-west-3')
+    })
+
+    it('should recognise newer, but kinda older, S3 regional url', function() {
+      var signer = new RequestSigner('https://jbarr-public.s3-eu-west-1.amazonaws.com/whatever')
+      signer.service.should.equal('s3')
+      signer.region.should.equal('eu-west-1')
+    })
+
     it('should not set extra headers for CodeCommit Git access', function() {
       var signer = new RequestSigner({service: 'codecommit', method: 'GIT', host: 'example.com'})
       signer.prepareRequest()
@@ -105,21 +147,37 @@ describe('aws4', function() {
       opts.hostname.should.equal('sqs.us-east-1.amazonaws.com')
       opts.headers.Host.should.equal('sqs.us-east-1.amazonaws.com')
     })
+
     it('should add hostname and no region if service is regionless', function() {
       var opts = aws4.sign({service: 'iam'})
       opts.hostname.should.equal('iam.amazonaws.com')
       opts.headers.Host.should.equal('iam.amazonaws.com')
     })
+
     it('should add hostname and no region if s3 and us-east-1', function() {
       var opts = aws4.sign({service: 's3'})
       opts.hostname.should.equal('s3.amazonaws.com')
       opts.headers.Host.should.equal('s3.amazonaws.com')
     })
+
+    it('should not add bucket to hostname if dot in s3 bucket and us-east-1', function() {
+      var opts = aws4.sign({service: 's3', path: '/jbarr.public'})
+      opts.hostname.should.equal('s3.amazonaws.com')
+      opts.headers.Host.should.equal('s3.amazonaws.com')
+    })
+
+    it('should not add bucket to hostname if dot in s3 bucket and us-east-2', function() {
+      var opts = aws4.sign({service: 's3', region: 'us-east-2', path: '/jbarr.public/somefile'})
+      opts.hostname.should.equal('s3.us-east-2.amazonaws.com')
+      opts.headers.Host.should.equal('s3.us-east-2.amazonaws.com')
+    })
+
     it('should add hostname and no region if sdb and us-east-1', function() {
       var opts = aws4.sign({service: 'sdb'})
       opts.hostname.should.equal('sdb.amazonaws.com')
       opts.headers.Host.should.equal('sdb.amazonaws.com')
     })
+
     it('should populate AWS headers correctly', function() {
       var opts = aws4.sign({service: 'sqs', headers: {Date: date}})
       opts.headers['X-Amz-Date'].should.equal(iso)
@@ -133,11 +191,13 @@ describe('aws4', function() {
       opts.hostname.should.equal('glacier.us-west-1.amazonaws.com')
       opts.headers.Host.should.equal('glacier.us-west-1.amazonaws.com')
     })
+
     it('should add correct hostname for s3', function() {
       var opts = aws4.sign({service: 's3', region: 'us-west-1'})
-      opts.hostname.should.equal('s3-us-west-1.amazonaws.com')
-      opts.headers.Host.should.equal('s3-us-west-1.amazonaws.com')
+      opts.hostname.should.equal('s3.us-west-1.amazonaws.com')
+      opts.headers.Host.should.equal('s3.us-west-1.amazonaws.com')
     })
+
     it('should add correct hostname for ses', function() {
       var opts = aws4.sign({service: 'ses', region: 'us-west-1'})
       opts.hostname.should.equal('email.us-west-1.amazonaws.com')
@@ -151,6 +211,7 @@ describe('aws4', function() {
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
     })
+
     it('should use custom port correctly', function() {
       var opts = aws4.sign({hostname: 'localhost', port: '9000', service: 's3', headers: {Date: date}})
       opts.headers['X-Amz-Date'].should.equal(iso)
@@ -167,6 +228,7 @@ describe('aws4', function() {
       opts.headers['X-Amz-Date'].should.equal(iso)
       opts.headers.Authorization.should.equal(auth)
     })
+
     it('should use custom port correctly', function() {
       var opts = aws4.sign({host: 'localhost', port: '9000', service: 's3', headers: {Date: date}})
       opts.headers['X-Amz-Date'].should.equal(iso)
@@ -182,6 +244,7 @@ describe('aws4', function() {
       var opts = aws4.sign({body: 'SomeAction'})
       opts.method.should.equal('POST')
     })
+
     it('should set Content-Type', function() {
       var opts = aws4.sign({body: 'SomeAction'})
       opts.headers['Content-Type'].should.equal('application/x-www-form-urlencoded; charset=utf-8')
@@ -228,6 +291,7 @@ describe('aws4', function() {
         'X-Amz-SignedHeaders=content-type%3Bhost%3Bx-amz-target&' +
         'X-Amz-Signature=3529a3f866ef85935692c2f2f6e8edb67de2ec91ce79ba5f1dbe28fc66cb154e')
     })
+
     it('should work with s3', function() {
       var opts = aws4.sign({
         service: 's3',
@@ -239,6 +303,7 @@ describe('aws4', function() {
         'X-Amz-Credential=ABCDEF%2F20121226%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-SignedHeaders=host&' +
         'X-Amz-Signature=1acb058aaf5ce6ea6125f03231ab2b64acc9ce05fd70e4c7f087515adc41814a')
     })
+
     it('should adhere to RFC-3986', function() {
       var opts = aws4.sign({
         service: 's3',

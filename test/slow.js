@@ -71,6 +71,10 @@ void (async() => {
   let okTests = [{
     url: 'https://s3.us-east-1.amazonaws.com/',
   }, {
+    url: 'https://s3-eu-west-1.amazonaws.com/',
+  }, {
+    url: 'https://s3-us-east-2.amazonaws.com/',
+  }, {
     url: 'https://sqs.us-east-1.amazonaws.com/?Action=ListQueues',
   }, {
     url: 'https://iam.amazonaws.com/?Action=ListGroups&Version=2010-05-08',
