@@ -20,11 +20,11 @@ Example
 -------
 
 ```javascript
-var http = require('https')
+var https = require('https')
 var aws4  = require('aws4')
 
 // to illustrate usage, we'll create a utility function to request and pipe to stdout
-function request(opts) { http.request(opts, function(res) { res.pipe(process.stdout) }).end(opts.body || '') }
+function request(opts) { https.request(opts, function(res) { res.pipe(process.stdout) }).end(opts.body || '') }
 
 // aws4 will sign an options object as you'd pass to http.request, with an AWS service and region
 var opts = { host: 'my-bucket.s3.us-west-1.amazonaws.com', path: '/my-object', service: 's3', region: 'us-west-1' }
