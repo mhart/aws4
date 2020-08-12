@@ -510,6 +510,42 @@ describe('aws4', function() {
       signer.sign().path.should.equal('/%2f%2f')
     })
 
+    it('should decode + as space with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/++'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%20%20')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/++')
+    })
+
+    it('should just leave + on non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/++'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%2B%2B')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/++')
+    })
+
+    it('should decode %2B with s3', function() {
+      var signer = new RequestSigner({service: 's3', path: '/%2b%2b'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%2B%2B')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%2b%2b')
+    })
+
+    it('should just escape %2B on non-s3', function() {
+      var signer = new RequestSigner({service: 'es', path: '/%2b%2b'})
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[1].should.equal('/%252b%252b')
+      canonical[2].should.equal('')
+      signer.sign().path.should.equal('/%2b%2b')
+    })
+
     it('should work with mixed chars > 127 and < 255 and percent encoding with s3', function() {
       var signer = new RequestSigner({service: 's3', path: '/ü%41'})
       var canonical = signer.canonicalString().split('\n')
