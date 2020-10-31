@@ -220,6 +220,13 @@ describe('aws4', function() {
         'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
         'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
     })
+    it('should remove protocol from host / hostname', function() {
+      var host = 'sqs.us-east-1.amazonaws.com';
+      var opts = aws4.sign({hostname: 'https://'+host, headers: {Date: date}})
+      opts.headers['Host'].should.equal(host)
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(auth)
+    })
   })
 
   describe('#sign() with host', function() {
@@ -236,6 +243,13 @@ describe('aws4', function() {
         'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
         'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
         'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
+    })
+    it('should remove protocol from host', function() {
+      var host = 'sqs.us-east-1.amazonaws.com';
+      var opts = aws4.sign({host: 'https://'+host, headers: {Date: date}})
+      opts.headers['Host'].should.equal(host)
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(auth)
     })
   })
 
