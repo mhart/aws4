@@ -6,7 +6,7 @@ aws4
 A small utility to sign vanilla Node.js http(s) request options using Amazon's
 [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
-If you want to sign and send AWS requests in a modern browser, or an environment like [Cloudflare Workers](https://developers.cloudflare.com/workers/), then check out [aws4fetch](https://github.com/mhart/aws4fetch) – otherwise you can also bundle this library for use [in older browsers](./browser).
+If you want to sign and send AWS requests in a browser, or an environment like [Cloudflare Workers](https://developers.cloudflare.com/workers/), then check out [aws4fetch](https://github.com/mhart/aws4fetch) – otherwise you can also bundle this library for use [in older browsers](./browser).
 
 The only AWS service that *doesn't* support v4 as of 2020-05-22 is
 [SimpleDB](https://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/SDB_API.html)
