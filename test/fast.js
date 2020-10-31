@@ -263,6 +263,7 @@ describe('aws4', function() {
           Date: date,
           'Content-Type': 'application/x-amz-json-1.0',
           'X-Amz-Target': 'DynamoDB_20111205.ListTables',
+          'Connection': 'keep-alive',
         },
       })
       opts.headers['X-Amz-Date'].should.equal(iso)
