@@ -1,4 +1,7 @@
 language: node_js
+arch:
+  - amd64
+  - ppc64le
 node_js:
   - "0.10"
   - "0.12"
@@ -7,3 +10,11 @@ node_js:
   - "8"
   - "10"
   - "12"
+jobs:
+  exclude:
+      - arch: ppc64le
+        node_js:
+          - "0.10"
+      - arch: ppc64le
+        node_js:  
+          - "0.12"
