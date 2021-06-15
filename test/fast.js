@@ -272,6 +272,24 @@ describe('aws4', function() {
         'SignedHeaders=content-length;content-type;date;host;x-amz-date;x-amz-target, ' +
         'Signature=f9a00417d284dfe2cfdef809652c1d54add4e159835a0c69ac8cbdaa227a5000')
     })
+
+    it('should return undefined headers as undefined', function() {
+      var opts = aws4.sign({
+        service: 'dynamodb',
+        region: 'ap-southeast-2',
+        method: 'DELETE',
+        path: '/Some/Path?param=key&param=otherKey',
+        body: 'SomeAction=SomeThing&Whatever=SomeThingElse',
+        headers: {
+          Date: date,
+          'Content-Type': 'application/x-amz-json-1.0',
+          'X-Amz-Target': 'DynamoDB_20111205.ListTables',
+          'Connection': 'keep-alive',
+          'sorry-mom': undefined
+        },
+      })
+      (opts.headers['sorry-mom'] === undefined).should.equal(true)
+    })
   })
 
   describe('#sign() with signQuery', function() {

@@ -295,7 +295,10 @@ RequestSigner.prototype.canonicalString = function() {
 RequestSigner.prototype.canonicalHeaders = function() {
   var headers = this.request.headers
   function trimAll(header) {
-    return header.toString().trim().replace(/\s+/g, ' ')
+    if (typeof header === 'string') {
+      return header.toString().trim().replace(/\s+/g, ' ')
+    }
+    return header;
   }
   return Object.keys(headers)
     .filter(function(key) { return HEADERS_TO_IGNORE[key.toLowerCase()] == null })
