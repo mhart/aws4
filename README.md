@@ -94,6 +94,34 @@ request(aws4.sign({
 ...
 */
 
+// you can also specify extra headers to ignore during signing
+request(aws4.sign({
+  host: '07tjusf2h91cunochc.us-east-1.aoss.amazonaws.com',
+  method: 'PUT',
+  path: '/my-index',
+  body: '{"mappings":{}}',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Amz-Content-Sha256': 'UNSIGNED-PAYLOAD'
+  },
+  extraHeadersToIgnore: {
+    'content-length': true
+  }
+}))
+
+// and headers to include that would normally be ignored
+request(aws4.sign({
+  service: 'mycustomservice',
+  path: '/whatever',
+  headers: {
+    'Range': 'bytes=200-1000, 2000-6576, 19000-'
+  },
+  extraHeadersToInclude: {
+    'range': true
+  }
+}))
+
+
 // The raw RequestSigner can be used to generate CodeCommit Git passwords
 var signer = new aws4.RequestSigner({
   service: 'codecommit',
@@ -128,6 +156,8 @@ populated if they don't already exist:
 - `service` (will try to be calculated from `hostname` or `host` if not given)
 - `region` (will try to be calculated from `hostname` or `host` or use `'us-east-1'` if not given)
 - `signQuery` (to sign the query instead of adding an `Authorization` header, defaults to false)
+- `extraHeadersToIgnore` (an object with lowercase header keys to ignore when signing, eg `{ 'content-length': true }`)
+- `extraHeadersToInclude` (an object with lowercase header keys to include when signing, overriding any ignores)
 - `headers['Host']` (will use `hostname` or `host` or be calculated if not given)
 - `headers['Content-Type']` (will use `'application/x-www-form-urlencoded; charset=utf-8'`
   if not given and there is a `body`)

@@ -367,6 +367,49 @@ describe('aws4', function() {
     })
   })
 
+  describe('#sign() with extraHeadersToIgnore', function() {
+    it('should generate signature correctly', function() {
+      var opts = aws4.sign({
+        host: '07tjusf2h91cunochc.us-east-1.aoss.amazonaws.com',
+        method: 'PUT',
+        path: '/my-index',
+        body: '{"mappings":{}}',
+        headers: {
+          Date: date,
+          'Content-Type': 'application/json',
+          'X-Amz-Content-Sha256': 'UNSIGNED-PAYLOAD',
+        },
+        extraHeadersToIgnore: {
+          'content-length': true
+        },
+      })
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/aoss/aws4_request, ' +
+        'SignedHeaders=content-type;date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=ade8635c05bfa4961bc28be0b0a0fbfd3d64e79feb1862f822ee6a4517417bcd')
+    })
+  })
+
+  describe('#sign() with extraHeadersToInclude', function() {
+    it('should generate signature correctly', function() {
+      var opts = aws4.sign({
+        service: 'someservice',
+        path: '/whatever',
+        headers: {
+          Date: date,
+          'Range': 'bytes=200-1000, 2000-6576, 19000-',
+        },
+        extraHeadersToInclude: {
+          'range': true
+        },
+      })
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/someservice/aws4_request, ' +
+        'SignedHeaders=date;host;range;x-amz-date, ' +
+        'Signature=8f3eba7a5743091daae62d00ce1c911c018d48f72dbdf180b15abe701718317a')
+    })
+  })
+
   describe('#signature() with CodeCommit Git access', function() {
     it('should generate signature correctly', function() {
       var signer = new RequestSigner({

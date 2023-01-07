@@ -72,6 +72,9 @@ function RequestSigner(request, credentials) {
     request.hostname = headers.Host || headers.host
 
   this.isCodeCommitGit = this.service === 'codecommit' && request.method === 'GIT'
+
+  this.extraHeadersToIgnore = request.extraHeadersToIgnore || Object.create(null)
+  this.extraHeadersToInclude = request.extraHeadersToInclude || Object.create(null)
 }
 
 RequestSigner.prototype.matchHost = function(host) {
@@ -81,7 +84,7 @@ RequestSigner.prototype.matchHost = function(host) {
   // ES's hostParts are sometimes the other way round, if the value that is expected
   // to be region equals ‘es’ switch them back
   // e.g. search-cluster-name-aaaa00aaaa0aaa0aaaaaaa0aaa.us-east-1.es.amazonaws.com
-  if (hostParts[1] === 'es')
+  if (hostParts[1] === 'es' || hostParts[1] === 'aoss')
     hostParts = hostParts.reverse()
 
   if (hostParts[1] == 's3') {
@@ -305,9 +308,14 @@ RequestSigner.prototype.canonicalHeaders = function() {
 }
 
 RequestSigner.prototype.signedHeaders = function() {
+  var extraHeadersToInclude = this.extraHeadersToInclude,
+      extraHeadersToIgnore = this.extraHeadersToIgnore
   return Object.keys(this.request.headers)
     .map(function(key) { return key.toLowerCase() })
-    .filter(function(key) { return HEADERS_TO_IGNORE[key] == null })
+    .filter(function(key) {
+      return extraHeadersToInclude[key] ||
+        (HEADERS_TO_IGNORE[key] == null && !extraHeadersToIgnore[key])
+    })
     .sort()
     .join(';')
 }
