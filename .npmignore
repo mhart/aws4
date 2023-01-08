@@ -2,3 +2,6 @@ test
 examples
 example.js
 browser
+.npmignore
+.tern-port
+.travis.yml
