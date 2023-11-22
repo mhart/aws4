@@ -6,6 +6,10 @@
   "license": "MIT",
   "repository": "github:mhart/aws4",
   "main": "aws4.js",
+  "files": [
+    "aws4.js",
+    "lru.js"
+  ],
   "scripts": {
     "test": "mocha ./test/fast.js -R list",
     "integration": "node ./test/slow.js"
