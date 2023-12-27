@@ -108,7 +108,7 @@ RequestSigner.prototype.isSingleRegion = function() {
   // Special case for S3 and SimpleDB in us-east-1
   if (['s3', 'sdb'].indexOf(this.service) >= 0 && this.region === 'us-east-1') return true
 
-  return ['cloudfront', 'ls', 'route53', 'iam', 'importexport', 'sts']
+  return ['cloudfront', 'ls', 'route53', 'iam', 'importexport']
     .indexOf(this.service) >= 0
 }
 
