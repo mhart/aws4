@@ -1,0 +1,42 @@
+name: Node CI
+
+on: [ push, pull_request ]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [ 14.x, 16.x, 18.x, 20.x ]
+        os: [ windows-latest, ubuntu-latest, macOS-latest ]
+
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Env
+      run: |
+        echo "Event name: ${{ github.event_name }}"
+        echo "Git ref:    ${{ github.ref }}"
+        echo "GH actor:   ${{ github.actor }}"
+        echo "SHA:        ${{ github.sha }}"
+        VER=`node --version`; echo "Node ver:   $VER"
+        VER=`npm --version`; echo "npm ver:    $VER"
+
+    - name: Install
+      run: npm install
+
+    - name: Test
+      run: npm test
+      env:
+        CI: true
