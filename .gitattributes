@@ -1,0 +1,5 @@
+*.authz text eol=lf
+*.creq text eol=lf
+*.req text eol=lf
+*.sreq text eol=lf
+*.sts text eol=lf
