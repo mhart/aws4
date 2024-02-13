@@ -40,6 +40,12 @@ describe('aws4', function() {
       signer.region.should.equal('us-west-2')
     })
 
+    it('should correctly recognise lambda for function urls', function() {
+      var signer = new RequestSigner('https://long-url-id.lambda-url.eu-west-1.on.aws/hello/world')
+      signer.service.should.equal('lambda')
+      signer.region.should.equal('eu-west-1')
+    })
+
     it('should correctly recognise es when interacting directly with the es api', function() {
       var signer = new RequestSigner('https://search-cluster-name-aaaaaa0aa00aa0aaaaaaa00aaa.eu-west-1.es.amazonaws.com')
       signer.service.should.equal('es')
