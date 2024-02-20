@@ -46,6 +46,10 @@ function RequestSigner(request, credentials) {
 
   if (typeof request === 'string') request = url.parse(request)
 
+  request = this.sanitizeHost(request);
+  if (request.headers)
+    request.headers = this.sanitizeHost(request.headers);
+
   var headers = request.headers = (request.headers || {}),
       hostParts = (!this.service || !this.region) && this.matchHost(request.hostname || request.host || headers.Host || headers.host)
 
@@ -75,6 +79,25 @@ function RequestSigner(request, credentials) {
 
   this.extraHeadersToIgnore = request.extraHeadersToIgnore || Object.create(null)
   this.extraHeadersToInclude = request.extraHeadersToInclude || Object.create(null)
+}
+
+RequestSigner.prototype.sanitizeHost = function(object) {
+  // Object will be headers || request
+  if (object.host) {
+    object.host = this.removeProtocol(object.host);
+  }
+  if (object.Host) {
+   object.Host = this.removeProtocol(object.Host);
+  }
+  if (object.hostname) {
+   object.hostname = this.removeProtocol(object.hostname);
+  }
+
+  return object;
+}
+
+RequestSigner.prototype.removeProtocol = function(url) {
+  return url.replace('http://', '').replace('https://', '');
 }
 
 RequestSigner.prototype.matchHost = function(host) {
