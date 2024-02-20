@@ -300,8 +300,15 @@ RequestSigner.prototype.canonicalHeaders = function() {
   function trimAll(header) {
     return header.toString().trim().replace(/\s+/g, ' ')
   }
+
+  var extraHeadersToInclude = this.extraHeadersToInclude,
+  extraHeadersToIgnore = this.extraHeadersToIgnore
+
   return Object.keys(headers)
-    .filter(function(key) { return HEADERS_TO_IGNORE[key.toLowerCase()] == null })
+    .filter(function(key) {
+      return extraHeadersToInclude[key.toLowerCase()] ||
+        (HEADERS_TO_IGNORE[key.toLowerCase()] == null && !extraHeadersToIgnore[key.toLowerCase()])
+    })
     .sort(function(a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1 })
     .map(function(key) { return key.toLowerCase() + ':' + trimAll(headers[key]) })
     .join('\n')
