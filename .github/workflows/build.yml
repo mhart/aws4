@@ -13,7 +13,10 @@ jobs:
     strategy:
       matrix:
         node-version: [ 14.x, 16.x, 18.x, 20.x ]
-        os: [ windows-latest, ubuntu-latest, macOS-latest ]
+        # TODO: Do we really need to test on windows and macOS?
+        #       We don't even touch the filesystem, let OS stuff
+        # os: [ windows-latest, ubuntu-latest, macOS-latest ]
+        os: [ ubuntu-latest ]
 
     steps:
     - name: Check out repo
