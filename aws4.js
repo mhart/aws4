@@ -46,7 +46,7 @@ function RequestSigner(request, credentials) {
 
   if (typeof request === 'string') request = url.parse(request)
 
-  var headers = request.headers = (request.headers || {}),
+  var headers = request.headers = Object.assign({}, (request.headers || {})),
       hostParts = (!this.service || !this.region) && this.matchHost(request.hostname || request.host || headers.Host || headers.host)
 
   this.request = request

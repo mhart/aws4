@@ -274,6 +274,27 @@ describe('aws4', function() {
     })
   })
 
+  describe('#sign() with copies', function() {
+    it('should modify request/opts in place and return same object', function() {
+      var opts = {service: 'sqs'}
+      var newOpts = aws4.sign(opts)
+      opts.should.equal(newOpts)
+    })
+
+    it('should not modify existing headers', function() {
+      var headers = {
+        'Content-Type': 'application/x-amz-json-1.0',
+        'X-Amz-Target': 'DynamoDB_20120810.ListTables',
+      }
+      var opts = aws4.sign({
+        service: 'dynamodb',
+        headers: headers,
+        body: '{}',
+      })
+      opts.headers.should.not.equal(headers)
+    })
+  })
+
   describe('#sign() with signQuery', function() {
     it('should work with standard services', function() {
       var opts = aws4.sign({
