@@ -1,8 +1,6 @@
 aws4
 ----
 
-[![Build Status](https://api.travis-ci.org/mhart/aws4.png?branch=master)](https://travis-ci.org/github/mhart/aws4)
-
 A small utility to sign vanilla Node.js http(s) request options using Amazon's
 [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
