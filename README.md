@@ -1,7 +1,7 @@
 aws4
 ----
 
-A small utility to sign vanilla Node.js http(s) request options using Amazon's
+A small utility to sign [vanilla Node.js http(s)](https://nodejs.org/api/http.html) request options using Amazon's
 [AWS Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 
 If you want to sign and send AWS requests using [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API), then check out [aws4fetch](https://github.com/mhart/aws4fetch) – otherwise you can also bundle this library for use [in older browsers](./browser).
