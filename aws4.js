@@ -55,8 +55,9 @@ function RequestSigner(request, credentials) {
   this.service = request.service || hostParts[0] || ''
   this.region = request.region || hostParts[1] || 'us-east-1'
 
-  // SES uses a different domain from the service name
+  // Fix servixes that use different domains
   if (this.service === 'email') this.service = 'ses'
+  if (this.service === 'appsync-api') this.service = 'appsync'
 
   if (!request.method && request.body)
     request.method = 'POST'
