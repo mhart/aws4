@@ -181,14 +181,6 @@ void (async() => {
     },
     body: '{}',
   }, {
-    url: 'https://opsworks.us-east-1.amazonaws.com/',
-    headers: {
-      'Content-Type': 'application/x-amz-json-1.1',
-      'X-Amz-Target': 'OpsWorks_20130218.DescribeStacks',
-      'Accept-Encoding': 'gzip, deflate, br',
-    },
-    body: '{}',
-  }, {
     url: 'https://route53domains.us-east-1.amazonaws.com/',
     headers: {
       'Content-Type': 'application/x-amz-json-1.1',
