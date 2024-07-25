@@ -407,7 +407,7 @@ describe('aws4', function() {
       opts.headers.Authorization.should.equal(
         'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/aoss/aws4_request, ' +
         'SignedHeaders=content-type;date;host;x-amz-content-sha256;x-amz-date, ' +
-        'Signature=ade8635c05bfa4961bc28be0b0a0fbfd3d64e79feb1862f822ee6a4517417bcd')
+        'Signature=742b9db3c09dbc6d29dd965fa44ec2d004d4aed4f0f4d179d0ee989c08c9bf06')
     })
   })
 
@@ -427,7 +427,7 @@ describe('aws4', function() {
       opts.headers.Authorization.should.equal(
         'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/someservice/aws4_request, ' +
         'SignedHeaders=date;host;range;x-amz-date, ' +
-        'Signature=8f3eba7a5743091daae62d00ce1c911c018d48f72dbdf180b15abe701718317a')
+        'Signature=8298a63e47319d57c1af6dfb5e5e5f1b30d2515ad1130d7f240b57ce94302d59')
     })
   })
 

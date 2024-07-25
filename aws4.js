@@ -296,14 +296,21 @@ RequestSigner.prototype.canonicalString = function() {
 }
 
 RequestSigner.prototype.canonicalHeaders = function() {
-  var headers = this.request.headers
+  var headers = this.request.headers,
+      extraHeadersToInclude = this.extraHeadersToInclude,
+      extraHeadersToIgnore = this.extraHeadersToIgnore
   function trimAll(header) {
     return header.toString().trim().replace(/\s+/g, ' ')
   }
-  return Object.keys(headers)
-    .filter(function(key) { return HEADERS_TO_IGNORE[key.toLowerCase()] == null })
-    .sort(function(a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1 })
-    .map(function(key) { return key.toLowerCase() + ':' + trimAll(headers[key]) })
+  return Object.entries(headers)
+    .map(function(entry) { return [entry[0].toLowerCase(), entry[1]] })
+    .filter(function(entry) {
+      var key = entry[0]
+      return extraHeadersToInclude[key] ||
+        (HEADERS_TO_IGNORE[key] == null && !extraHeadersToIgnore[key])
+    })
+    .sort(function(a, b) { return a[0] < b[0] ? -1 : 1 })
+    .map(function(entry) { return entry[0] + ':' + trimAll(entry[1]) })
     .join('\n')
 }
 

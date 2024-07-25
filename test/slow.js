@@ -133,6 +133,29 @@ void (async() => {
     },
     body: '{}',
   }, {
+    url: 'https://dynamodb.us-east-1.amazonaws.com/',
+    headers: {
+      'Content-Type': 'application/x-amz-json-1.0',
+      'X-Amz-Target': 'DynamoDB_20120810.ListTables',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'User-Agent': 'node',
+    },
+    extraHeadersToInclude: {
+      'user-agent': true,
+    },
+    body: '{}',
+  }, {
+    url: 'https://dynamodb.us-east-1.amazonaws.com/',
+    headers: {
+      'Content-Type': 'application/x-amz-json-1.0',
+      'X-Amz-Target': 'DynamoDB_20120810.ListTables',
+      'Accept-Encoding': 'gzip, deflate, br',
+    },
+    extraHeadersToIgnore: {
+      'content-type': true,
+    },
+    body: '{}',
+  }, {
     service: 'appstream',
     url: 'https://appstream2.us-east-1.amazonaws.com/',
     headers: {
