@@ -55,8 +55,9 @@ function RequestSigner(request, credentials) {
   this.service = request.service || hostParts[0] || ''
   this.region = request.region || hostParts[1] || 'us-east-1'
 
-  // SES uses a different domain from the service name
+  // Services that use a different domain from the service name
   if (this.service === 'email') this.service = 'ses'
+  if (this.service === 'lambda-url') this.service = 'lambda'
 
   if (!request.method && request.body)
     request.method = 'POST'
@@ -78,7 +79,7 @@ function RequestSigner(request, credentials) {
 }
 
 RequestSigner.prototype.matchHost = function(host) {
-  var match = (host || '').match(/([^\.]+)\.(?:([^\.]*)\.)?amazonaws\.com(\.cn)?$/)
+  var match = (host || '').match(/([^\.]+)\.(?:([^\.]*)\.)?(amazonaws\.com(\.cn)?|on.aws)$/)
   var hostParts = (match || []).slice(1, 3)
 
   // ES's hostParts are sometimes the other way round, if the value that is expected
