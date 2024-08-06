@@ -295,36 +295,31 @@ RequestSigner.prototype.canonicalString = function() {
   ].join('\n')
 }
 
-RequestSigner.prototype.canonicalHeaders = function() {
+RequestSigner.prototype.filterHeaders = function() {
   var headers = this.request.headers,
       extraHeadersToInclude = this.extraHeadersToInclude,
       extraHeadersToIgnore = this.extraHeadersToIgnore
-  function trimAll(header) {
-    return header.toString().trim().replace(/\s+/g, ' ')
-  }
-  return Object.entries(headers)
-    .map(function(entry) { return [entry[0].toLowerCase(), entry[1]] })
+  this.filteredHeaders = Object.keys(headers)
+    .map(function(key) { return [key.toLowerCase(), headers[key]] })
     .filter(function(entry) {
-      var key = entry[0]
-      return extraHeadersToInclude[key] ||
-        (HEADERS_TO_IGNORE[key] == null && !extraHeadersToIgnore[key])
+      return extraHeadersToInclude[entry[0]] ||
+        (HEADERS_TO_IGNORE[entry[0]] == null && !extraHeadersToIgnore[entry[0]])
     })
     .sort(function(a, b) { return a[0] < b[0] ? -1 : 1 })
-    .map(function(entry) { return entry[0] + ':' + trimAll(entry[1]) })
-    .join('\n')
+}
+
+RequestSigner.prototype.canonicalHeaders = function() {
+  if (!this.filteredHeaders) this.filterHeaders()
+
+  return this.filteredHeaders.map(function(entry) {
+    return entry[0] + ':' + entry[1].toString().trim().replace(/\s+/g, ' ')
+  }).join('\n')
 }
 
 RequestSigner.prototype.signedHeaders = function() {
-  var extraHeadersToInclude = this.extraHeadersToInclude,
-      extraHeadersToIgnore = this.extraHeadersToIgnore
-  return Object.keys(this.request.headers)
-    .map(function(key) { return key.toLowerCase() })
-    .filter(function(key) {
-      return extraHeadersToInclude[key] ||
-        (HEADERS_TO_IGNORE[key] == null && !extraHeadersToIgnore[key])
-    })
-    .sort()
-    .join(';')
+  if (!this.filteredHeaders) this.filterHeaders()
+
+  return this.filteredHeaders.map(function(entry) { return entry[0] }).join(';')
 }
 
 RequestSigner.prototype.credentialString = function() {

@@ -746,6 +746,53 @@ describe('aws4', function() {
       signer.sign().path.should.equal('/?a=&A=')
     })
 
+    it('should deal with extraHeadersToIgnore', function() {
+      var signer = new RequestSigner({
+        host: '07tjusf2h91cunochc.us-east-1.aoss.amazonaws.com',
+        method: 'PUT',
+        path: '/my-index',
+        body: '{"mappings":{}}',
+        headers: {
+          Date: date,
+          'Content-Type': 'application/json',
+          'X-Amz-Content-Sha256': 'UNSIGNED-PAYLOAD',
+        },
+        extraHeadersToIgnore: {
+          'content-length': true
+        },
+      })
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[3].should.equal('content-type:application/json')
+      canonical[4].should.equal('date:Wed, 26 Dec 2012 06:10:30 GMT')
+      canonical[5].should.equal('host:07tjusf2h91cunochc.us-east-1.aoss.amazonaws.com')
+      canonical[6].should.equal('x-amz-content-sha256:UNSIGNED-PAYLOAD')
+      canonical[7].should.equal('x-amz-date:20121226T061030Z')
+      canonical[8].should.equal('')
+      canonical[9].should.equal('content-type;date;host;x-amz-content-sha256;x-amz-date')
+    })
+  
+    it('should deal with extraHeadersToInclude', function() {
+      var signer = new RequestSigner({
+        service: 'someservice',
+        path: '/whatever',
+        headers: {
+          Date: date,
+          'Range': 'bytes=200-1000, 2000-6576, 19000-',
+        },
+        extraHeadersToInclude: {
+          'range': true
+        },
+      })
+      var canonical = signer.canonicalString().split('\n')
+
+      canonical[3].should.equal('date:Wed, 26 Dec 2012 06:10:30 GMT')
+      canonical[4].should.equal('host:someservice.us-east-1.amazonaws.com')
+      canonical[5].should.equal('range:bytes=200-1000, 2000-6576, 19000-')
+      canonical[6].should.equal('x-amz-date:20121226T061030Z')
+      canonical[7].should.equal('')
+      canonical[8].should.equal('date;host;range;x-amz-date')
+    })
   })
 
   describe('with AWS test suite', function() {
