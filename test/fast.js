@@ -388,6 +388,38 @@ describe('aws4', function() {
     })
   })
 
+  describe('#sign() without X-Amz-Content-Sha256 header', function() {
+    it('should not add header for any service', function() {
+      var opts = aws4.sign({
+        service: 'aos',
+        method: 'PUT',
+        path: '/some-bucket/file.txt',
+        body: 'Test Body'
+      })
+      opts.headers.should.not.have.property('X-Amz-Content-Sha256')
+    })
+
+    it('should add header for s3', function() {
+      var opts = aws4.sign({
+        service: 's3',
+        method: 'PUT',
+        path: '/some-bucket/file.txt',
+        body: 'Test Body'
+      })
+      opts.headers['X-Amz-Content-Sha256'].should.equal('ae6d8a1c07f438667618879eae74ffab84c236ea5d8ca52d5ca0523cc35e8bb9')
+    })
+
+    it('should add header for an empty body for aoss', function() {
+      var opts = aws4.sign({
+        service: 'aoss',
+        method: 'PUT',
+        path: '/some-bucket/file.txt',
+        body: undefined
+      })
+      opts.headers['X-Amz-Content-Sha256'].should.equal('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+    })
+  })
+
   describe('#sign() with extraHeadersToIgnore', function() {
     it('should generate signature correctly', function() {
       var opts = aws4.sign({
