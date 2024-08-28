@@ -9,7 +9,7 @@
     "build": "browserify -o bundle.js index.js"
   },
   "dependencies": {
-    "aws4": "^1.13.0"
+    "aws4": "^1.13.2"
   },
   "devDependencies": {
     "browserify": "^17.0.0"
