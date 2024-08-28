@@ -15,7 +15,7 @@
     "integration": "node ./test/slow.js"
   },
   "devDependencies": {
-    "mocha": "^10.7.0",
+    "mocha": "^10.7.3",
     "should": "^13.2.3"
   }
 }
