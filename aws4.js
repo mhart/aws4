@@ -65,7 +65,8 @@ function RequestSigner(request, credentials) {
     headers.Host = request.hostname || request.host || this.createHost()
 
     // If a port is specified explicitly, use it as is
-    if (request.port)
+    // As long as its not a default for the expected HTTP type (80 or 443)
+    if (request.port && !this.isStandardPort(request.port))
       headers.Host += ':' + request.port
   }
   if (!request.hostname && !request.host)
@@ -380,4 +381,18 @@ aws4.RequestSigner = RequestSigner
 
 aws4.sign = function(request, credentials) {
   return new RequestSigner(request, credentials).sign()
+}
+
+
+/**
+ * Checks if port is a known "standard" port for HTTP calls (80 or 443 at this time)
+ * @param port - the port to check, either string or number
+ * @returns {Boolean}
+ */
+RequestSigner.prototype.isStandardPort = function (port) {
+  if (!port) return false
+
+  if (typeof port === 'string') port = parseInt(port, 10)
+
+  return port === 443 || port === 80
 }

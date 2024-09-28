@@ -121,6 +121,48 @@ describe('aws4', function() {
       var signer = new RequestSigner({service: 'codecommit', method: 'GIT', host: 'example.com'})
       signer.canonicalString().should.match(/\n$/)
     })
+
+    it('should recognise number 80 as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort(80).should.be.true();
+    })
+
+    it('should recognise string 80 as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort('80').should.be.true();
+    })
+
+    it('should recognise number 443 as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort(443).should.be.true();
+    })
+
+    it('should recognise string 443 as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort('443').should.be.true();
+    })
+
+    it('should reject falsy as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort().should.be.false();
+      signer.isStandardPort(null).should.be.false();
+      signer.isStandardPort(false).should.be.false();
+    })
+
+    it('should reject a number as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort(9000).should.be.false();
+    })
+
+    it('should reject a string as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort('9000').should.be.false();
+    })
+
+    it('should reject a non-numeric string as a standard port', function() {
+      var signer = new RequestSigner('https://email.us-west-2.amazonaws.com')
+      signer.isStandardPort('word').should.be.false();
+    })
   })
 
   describe('#sign() with no credentials', function() {
@@ -236,6 +278,30 @@ describe('aws4', function() {
         'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' +
         'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
         'Signature=6fda8a58c01edfcb6773c15ad5a276a893ce52978a8f5cd1705fae14df78cfd4')
+    })
+    it('should handle custom port as string matching http default correctly', function() {
+      var opts = aws4.sign({host: 'localhost', port: '80', service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' + 
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=84e1967e2785821bc4a523fb4365c9f90007834e018ec6e1e9ae1b838fa90046')
+    })
+    it('should handle custom port as number matching http default correctly', function() {
+      var opts = aws4.sign({host: 'localhost', port: 80, service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' + 
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=84e1967e2785821bc4a523fb4365c9f90007834e018ec6e1e9ae1b838fa90046')
+    })
+    it('should handle custom port matching https default correctly', function() {
+      var opts = aws4.sign({host: 'localhost', port: '443', service: 's3', headers: {Date: date}})
+      opts.headers['X-Amz-Date'].should.equal(iso)
+      opts.headers.Authorization.should.equal(
+        'AWS4-HMAC-SHA256 Credential=ABCDEF/20121226/us-east-1/s3/aws4_request, ' + 
+        'SignedHeaders=date;host;x-amz-content-sha256;x-amz-date, ' +
+        'Signature=84e1967e2785821bc4a523fb4365c9f90007834e018ec6e1e9ae1b838fa90046')
     })
   })
 
