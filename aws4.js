@@ -26,6 +26,12 @@ function encodeRfc3986Full(str) {
   return encodeRfc3986(encodeURIComponent(str))
 }
 
+// Map services domain to their corresponding service
+const serviceDomainMap = {
+  'email': 'ses',
+  'aps-workspaces': 'aps',
+}
+
 // A bit of a combination of:
 // https://github.com/aws/aws-sdk-java-v2/blob/dc695de6ab49ad03934e1b02e7263abbd2354be0/core/auth/src/main/java/software/amazon/awssdk/auth/signer/internal/AbstractAws4Signer.java#L59
 // https://github.com/aws/aws-sdk-js/blob/18cb7e5b463b46239f9fdd4a65e2ff8c81831e8f/lib/signers/v4.js#L191-L199
@@ -55,8 +61,10 @@ function RequestSigner(request, credentials) {
   this.service = request.service || hostParts[0] || ''
   this.region = request.region || hostParts[1] || 'us-east-1'
 
-  // SES uses a different domain from the service name
-  if (this.service === 'email') this.service = 'ses'
+  // Override services thats uses a different domain from the service name
+  if (serviceDomainMap.hasOwnProperty(this.service)) {
+    this.service = serviceDomainMap[this.service];
+  }
 
   if (!request.method && request.body)
     request.method = 'POST'
@@ -113,8 +121,13 @@ RequestSigner.prototype.isSingleRegion = function() {
 }
 
 RequestSigner.prototype.createHost = function() {
-  var region = this.isSingleRegion() ? '' : '.' + this.region,
-      subdomain = this.service === 'ses' ? 'email' : this.service
+  var region = this.isSingleRegion() ? '' : '.' + this.region
+
+  const getKeyByValue = (object, value) => {
+    return Object.keys(object).find(key => object[key] === value);
+  };
+  const subdomain = getKeyByValue(serviceDomainMap, this.service) || this.service
+
   return subdomain + region + '.amazonaws.com'
 }
 
